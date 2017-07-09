@@ -1,6 +1,8 @@
+`timescale 1ns/1ps
+
 module CPU_single (
 	input reset,
-	input clk,    // Clock	
+	input clk    // Clock	
 );
 
 wire [2:0] PCSrc;
@@ -8,14 +10,16 @@ wire [1:0] RegDst;
 wire RegWr;
 wire ALUSrc1;
 wire ALUSrc2;
-wire ALUFun;
 wire Sign;
 wire MemWr;
 wire MemRd;
 wire [1:0] MemToReg;
 wire EXTOp;
 wire LUOp;
-wire IRQ;
+reg IRQ;
+initial begin
+	IRQ = 0;
+end
 wire [31:0] Instruction;
 wire [5:0] ALUFun;
 wire [31:0] PC_plus4;
@@ -52,18 +56,18 @@ PC_add PCA(
 	.clk   (clk),
 	.PCSrc (PCSrc),
 	.ALUOut(ALUOut[0]),
-	.EXTOut(EXTOut),,
+	.EXTOut(EXTOut),
 	.JT    (Instruction[25:0]),
 	.A     (DataBus_A),
-	.PC    (PC)
+	.PC    (PC),
 	.plus4 (PC_plus4)
 );
 
 
 Inst_Mem IM(
 	.addr(PC),
-	.data(Instruction),
-)
+	.data(Instruction)
+);
 
 
 wire [4:0] Addr_destination;
@@ -73,7 +77,7 @@ assign Addr_destination = (RegDst[1:0] == 2'b00)?Instruction[15:11]:
 
 RegFile RF(
 	.reset(reset),
-	.clk  (clk)
+	.clk  (clk),
 	.wr   (RegWr),
 	.addr1(Instruction[25:21]),   // Rs
 	.addr2(Instruction[20:16]),   // Rt
@@ -92,13 +96,13 @@ assign ALU_in2 = ALUSrc2?LUOut:DataBus_B;
 
 ALU ALU_(
 	.ALUFun(ALUFun),
-	.A     (ALU_in1)
+	.A     (ALU_in1),
 	.B     (ALU_in2),
 	.Sign  (Sign),
 	.S     (ALUOut)
 );
 
-assign LUOut = LUOp? {Instruction[15:0], 16'b0}: EXTOp;
+assign LUOut = LUOp? {Instruction[15:0], 16'b0}: EXTOut;
 assign EXTOut = EXTOp? {{16{Instruction[15]}}, Instruction[15:0]}:
 					   {16'b0, Instruction[15:0]};
 
@@ -112,6 +116,7 @@ Data_Mem DM(
 	.wr   (MemWr),
 	.addr (ALUOut),
 	.rdata(Data_Mem_Out),
+	.wdata(DataBus_B)
 );
 
 assign DataBus_C = (MemToReg == 2'b00)?ALUOut:

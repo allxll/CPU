@@ -16,22 +16,21 @@ module Control (
 );
 
 
-assign PCSrc =  IRQ? 2'b100:    // Interrupt
+assign PCSrc =  IRQ? 3'b100:    // Interrupt
 
 				!((Instruction[31:26] == 6'h00 && (Instruction[5:0] == 6'h20 || Instruction[5:0] == 6'h2a || Instruction[5:0] == 6'h03 || Instruction[5:0] == 6'h02 || 
 									Instruction[5:0] == 6'h21 || Instruction[5:0] == 6'h22 || Instruction[5:0] == 6'h23 || Instruction[5:0] == 6'h24  || Instruction[5:0] == 6'h25 || 
 									Instruction[5:0] == 6'h26 || Instruction[5:0] == 6'h27 || Instruction[5:0] == 6'h00 || Instruction[5:0] == 6'h08 || Instruction[5:0] == 6'h09)) || 
 				Instruction[31:26] == 6'h01 || Instruction[31:26] == 6'h06 || Instruction[31:26] == 6'h0a || Instruction[31:26] == 6'h0b || Instruction[31:26] == 6'h05 || Instruction[31:26] == 6'h04 || 
 				Instruction[31:26] == 6'h23 || Instruction[31:26] == 6'h2b || Instruction[31:26] == 6'h0f || Instruction[31:26] == 6'h08 || Instruction[31:26] == 6'h09 || Instruction[31:26] == 6'h0c || 
-				Instruction[31:26] == 6'h02 || Instruction[31:26] == 6'h03 || Instruction[31:26] == 6'h07)? 2'b101:    // Exception
+				Instruction[31:26] == 6'h02 || Instruction[31:26] == 6'h03 || Instruction[31:26] == 6'h07)? 3'b101:    // Exception
 
-				(Instruction[31:26] == 6'h02 || Instruction[31:26] == 6'h03 )? 2'b010:  // j, jal
+				(Instruction[31:26] == 6'h02 || Instruction[31:26] == 6'h03 )? 3'b010:  // j, jal
 
-				(Instruction[31:26] == 6'h00 && (Instruction[5:0] == 6'h08 || Instruction[5:0] == 6'h09))? 2'b011:  // jr jalr
+				(Instruction[31:26] == 6'h00 && (Instruction[5:0] == 6'h08 || Instruction[5:0] == 6'h09))? 3'b011:  // jr jalr
 
-				(Instruction[31:26] == 6'h04 || Instruction[31:26] == 6'h05 || Instruction[31:26] == 6'h06 || Instruction[31:26] == 6'h07 || Instruction[31:26] == 6'h01)? 2'b001:   // bxx*5
-
-				2'b00;
+				(Instruction[31:26] == 6'h04 || Instruction[31:26] == 6'h05 || Instruction[31:26] == 6'h06 || Instruction[31:26] == 6'h07 || Instruction[31:26] == 6'h01)? 3'b001:   // bxx*5
+				3'b000;
 
 
 
@@ -39,7 +38,7 @@ assign RegDst = (Instruction[31:26] == 6'h03)? 2:  // jal
 				(Instruction[31:26] == 6'h00)? 0: 1;   // R-type instructions
 
 
-assign RegWrite = (Instruction[31:26] == 6'h2b || Instruction[31:26] == 6'h04 || Instruction[31:26] == 6'h05 || Instruction[31:26] == 6'h06 || Instruction[31:26] == 6'h07 || 
+assign RegWr = (Instruction[31:26] == 6'h2b || Instruction[31:26] == 6'h04 || Instruction[31:26] == 6'h05 || Instruction[31:26] == 6'h06 || Instruction[31:26] == 6'h07 || 
 					Instruction[31:26] == 6'h01 || Instruction[31:26] == 6'h02 || (Instruction[31:26] == 6'h00 && Instruction[5:0] == 6'h08))? 0: 1;  // sw, bxx*5, j, jr     ps: nop is regarded as sll.
 
 
@@ -62,23 +61,23 @@ assign ALUFun = ((Instruction[31:26] == 6'h00 && (Instruction[5:0] == 6'h20 || I
 				((Instruction[31:26] == 6'h00 && Instruction[5:0] == 6'h2a) || Instruction[31:26] == 6'h0a || Instruction[31:26] == 6'h0b)? 6'b110101:
 				(Instruction[31:26] == 6'h06)? 6'b111101:
 				(Instruction[31:26] == 6'h01)? 6'b111011:
-				6'b111111 // Instruction[31:26] == 6'h07
+				6'b111111; // Instruction[31:26] == 6'h07
 
 
 assign Sign = ((Instruction[31:26] == 6'h00 && (Instruction[5:0] == 6'h21 || Instruction[5:0] == 6'h23)) || Instruction[31:26] == 6'h09 || Instruction[31:26] == 6'h0b)? 0 : 1;  // addu, subu, addiu, sltiu
 
-assign MemRead = (Instruction[31:26] == 6'h23)? 1:0; // lw
+assign MemRd = (Instruction[31:26] == 6'h23)? 1:0; // lw
 
-assign MemWrite = (Instruction[31:26] == 6'h2b)? 1:0; //sw
+assign MemWr = (Instruction[31:26] == 6'h2b)? 1:0; //sw
 
-assign MemtoReg = (Instruction[31:26] == 6'h23)? 1: // lw
+assign MemToReg = (Instruction[31:26] == 6'h23)? 1: // lw
 					(Instruction[31:26] == 6'h03 || (Instruction[31:26] == 6'h00 && Instruction[5:0] == 6'h09))? 2: 0;  // jal, jalr
 
 
 
-assign ExtOp = (Instruction[31:26] == 6'h0c)? 0 : 1; // andi
+assign EXTOp = (Instruction[31:26] == 6'h0c)? 0 : 1; // andi
 
-assign LuOp = (Instruction[31:26] == 6'h0f)? 1:0; // lui
+assign LUOp = (Instruction[31:26] == 6'h0f)? 1:0; // lui
 
 
 

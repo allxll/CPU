@@ -12,31 +12,27 @@ assign data=(addr < (ROM_SIZE<<2))?ROMDATA[addr[31:2]]:32'b0;
 
 integer i;
 initial begin
-		ROMDATA[0] <= 32'h3c114000;
-		ROMDATA[1] <= 32'h26310004;
-		ROMDATA[2] <= 32'h241000aa;
-		ROMDATA[3] <= 32'hae200000;
-		ROMDATA[4] <= 32'h08100000;
-		ROMDATA[5] <= 32'h0c000000;
-		ROMDATA[6] <= 32'h00000000;
-		ROMDATA[7] <= 32'h3402000a;
-		ROMDATA[8] <= 32'h0000000c;
-		ROMDATA[9] <= 32'h0000_0000;
-		ROMDATA[10]<= 32'h0274_8825;
-		ROMDATA[11] <= 32'h0800_0015;
-		ROMDATA[12] <= 32'h0274_8820;
-		ROMDATA[13] <= 32'h0800_0015;
-		ROMDATA[14] <= 32'h0274_882A;
-		ROMDATA[15] <= 32'h1011_0002;
-		ROMDATA[16] <= 32'h0293_8822;
-		ROMDATA[17] <= 32'h0800_0015;
-		ROMDATA[18] <= 32'h0274_8822;
-		ROMDATA[19] <= 32'h0800_0015; 
-		ROMDATA[20] <= 32'h0274_8824;
-		ROMDATA[21] <= 32'hae11_0003;
-		ROMDATA[22] <= 32'h0800_0001;
+		ROMDATA[0] <= 32'h2004_0003;
+		ROMDATA[1] <= 32'h0c00_0003;
+		ROMDATA[2] <= 32'h1000_ffff;
+		ROMDATA[3] <= 32'h23bd_0008;
+		ROMDATA[4] <= 32'hafbf_fffc;
+		ROMDATA[5] <= 32'hafa4_0000;
+		ROMDATA[6] <= 32'h2888_0001;
+		ROMDATA[7] <= 32'h1100_0003;
+		ROMDATA[8] <= 32'h0000_1026;
+		ROMDATA[9] <= 32'h23bd_fff8;
+		ROMDATA[10]<= 32'h03e0_0008;
+		ROMDATA[11] <= 32'h2084_ffff;
+		ROMDATA[12] <= 32'h0c00_0003;
+		ROMDATA[13] <= 32'h8fa4_0000;
+		ROMDATA[14] <= 32'h8fbf_fffc;
+		ROMDATA[15] <= 32'h23bd_fff8;
+		ROMDATA[16] <= 32'h0082_1020;
+		ROMDATA[17] <= 32'h03e0_0008;
+
         
-	    for (i=23;i<ROM_SIZE;i=i+1) begin
+	    for (i=18;i<ROM_SIZE;i=i+1) begin
             ROMDATA[i] <= 32'b0;
         end
 end

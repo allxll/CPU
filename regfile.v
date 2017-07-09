@@ -9,7 +9,7 @@ module RegFile (
 	input [4:0] addr3,
 	input [31:0] data3,
 	output [31:0] data1,
-	output [31:0] data2,
+	output [31:0] data2
 );
 
 reg [31:0] RF_DATA[31:1];

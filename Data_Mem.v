@@ -4,16 +4,25 @@ module Data_Mem (
 	input reset,clk,
 	input rd,wr,
 	input [31:0] addr,	//Address Must be Word Aligned
-	input [31:0] wdata
-	output [31:0] rdata,
+	input [31:0] wdata,
+	output [31:0] rdata
 );
 parameter RAM_SIZE = 256;
+parameter RAM_SIZE_mul_4 = 1024;
+
 (* ram_style = "distributed" *) reg [31:0] RAMDATA [RAM_SIZE-1:0];
 
-assign rdata=(rd && (addr < (RAM_SIZE<<2))?RAMDATA[addr[31:2]]:32'b0;
+assign rdata = (rd && (addr < RAM_SIZE_mul_4))? RAMDATA[addr[9:2]]:32'b0;
 
-always@(posedge clk) begin
-	if(wr && (addr < RAM_SIZE)) RAMDATA[addr[31:2]]<=wdata;
+
+integer i;
+always@(negedge reset or posedge clk) begin
+	if(~reset) begin
+		for (i = 0; i < RAM_SIZE; i=i+1) begin
+			RAMDATA[i] <= 32'b0;
+		end
+	end
+	if(wr && (addr < RAM_SIZE_mul_4)) RAMDATA[addr[9:2]]<=wdata;
 end
 
 endmodule
