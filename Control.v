@@ -23,7 +23,7 @@ assign PCSrc =  IRQ? 3'b100:    // Interrupt
 									Instruction[5:0] == 6'h26 || Instruction[5:0] == 6'h27 || Instruction[5:0] == 6'h00 || Instruction[5:0] == 6'h08 || Instruction[5:0] == 6'h09)) || 
 				Instruction[31:26] == 6'h01 || Instruction[31:26] == 6'h06 || Instruction[31:26] == 6'h0a || Instruction[31:26] == 6'h0b || Instruction[31:26] == 6'h05 || Instruction[31:26] == 6'h04 || 
 				Instruction[31:26] == 6'h23 || Instruction[31:26] == 6'h2b || Instruction[31:26] == 6'h0f || Instruction[31:26] == 6'h08 || Instruction[31:26] == 6'h09 || Instruction[31:26] == 6'h0c || 
-				Instruction[31:26] == 6'h02 || Instruction[31:26] == 6'h03 || Instruction[31:26] == 6'h07)? 3'b101:    // Exception
+				Instruction[31:26] == 6'h02 || Instruction[31:26] == 6'h03 || Instruction[31:26] == 6'h07 || Instruction[31:26] == 6'h0d)? 3'b101:    // Exception
 
 				(Instruction[31:26] == 6'h02 || Instruction[31:26] == 6'h03 )? 3'b010:  // j, jal
 
@@ -34,7 +34,8 @@ assign PCSrc =  IRQ? 3'b100:    // Interrupt
 
 
 
-assign RegDst = (Instruction[31:26] == 6'h03)? 2:  // jal
+assign RegDst = IRQ? 3: 
+				(Instruction[31:26] == 6'h03)? 2:  // jal
 				(Instruction[31:26] == 6'h00)? 0: 1;   // R-type instructions
 
 
@@ -50,7 +51,7 @@ assign ALUSrc2 = (Instruction[31:26] == 6'h00 || Instruction[31:26] == 6'h04 || 
 assign ALUFun = ((Instruction[31:26] == 6'h00 && (Instruction[5:0] == 6'h20 || Instruction[5:0] == 6'h21)) || Instruction[31:26] == 6'h23 || Instruction[31:26] == 6'h2b || Instruction[31:26] == 6'h0f || Instruction[31:26] == 6'h08 || Instruction[31:26] == 6'h09 )? 6'b000000:
 				(Instruction[31:26] == 6'h00 && (Instruction[5:0] == 6'h22 || Instruction[5:0] == 6'h23))? 6'b000001: 
 				((Instruction[31:26] == 6'h00 && Instruction[5:0] == 6'h24) || Instruction[31:26] == 6'h0c)? 6'b011000:
-				(Instruction[31:26] == 6'h00 && Instruction[5:0] == 6'h25)? 6'b011110:
+				((Instruction[31:26] == 6'h00 && Instruction[5:0] == 6'h25) || Instruction[31:26] == 6'h0d)? 6'b011110:
 				(Instruction[31:26] == 6'h00 && Instruction[5:0] == 6'h26)? 6'b010110:
 				(Instruction[31:26] == 6'h00 && Instruction[5:0] == 6'h27)? 6'b010001:
 				((Instruction[31:26] == 6'h00 && (Instruction[5:0] == 6'h00 || Instruction[5:0] == 6'h08 || Instruction[5:0] == 6'h09)) || Instruction[31:26] == 6'h02 || Instruction[31:26] == 6'h03)? 6'b100000:  // contain nop, sll j, jal jr jalr
@@ -71,11 +72,11 @@ assign MemRd = (Instruction[31:26] == 6'h23)? 1:0; // lw
 assign MemWr = (Instruction[31:26] == 6'h2b)? 1:0; //sw
 
 assign MemToReg = (Instruction[31:26] == 6'h23)? 1: // lw
-					(Instruction[31:26] == 6'h03 || (Instruction[31:26] == 6'h00 && Instruction[5:0] == 6'h09))? 2: 0;  // jal, jalr
+					(IRQ || Instruction[31:26] == 6'h03 || (Instruction[31:26] == 6'h00 && Instruction[5:0] == 6'h09))? 2: 0;  // jal, jalr, Interrupt
 
 
 
-assign EXTOp = (Instruction[31:26] == 6'h0c)? 0 : 1; // andi
+assign EXTOp = (Instruction[31:26] == 6'h0c || Instruction[31:26] == 6'h0d)? 0 : 1; // andi
 
 assign LUOp = (Instruction[31:26] == 6'h0f)? 1:0; // lui
 

@@ -1,22 +1,34 @@
 `timescale 1ns/1ps
 
-module Peripheral (reset,clk,rd,wr,addr,wdata,rdata,led,switch,digi,irqout);
-input reset,clk;
-input rd,wr;
-input [31:0] addr;
-input [31:0] wdata;
-output [31:0] rdata;
-reg [31:0] rdata;
+module Peripheral (
+	input reset,clk,
+	input rd,wr,
+	input [31:0] addr,
+	input [31:0] wdata,
+	input [7:0] switch,
+	output reg [31:0] rdata,
+	output reg [7:0] led,
+	output reg [11:0] digi,
+	output irqout
+);
 
-output [7:0] led;
-reg [7:0] led;
-input [7:0] switch;
-output [11:0] digi;
-reg [11:0] digi;
-output irqout;
 
 reg [31:0] TH,TL;
 reg [2:0] TCON;
+
+
+
+
+// Test Purpose Only
+initial begin
+	led = 0;
+	digi = 0;
+end
+
+//
+
+
+
 assign irqout = TCON[2];
 
 always@(*) begin
@@ -45,9 +57,14 @@ always@(negedge reset or posedge clk) begin
 		if(TCON[0]) begin	//timer is enabled
 			if(TL==32'hffffffff) begin
 				TL <= TH;
-				if(TCON[1]) TCON[2] <= 1'b1;		//irq is enabled
+				if(TCON[1]) begin 
+					TCON[2] <= 1'b1;
+				end		//irq is enabled
 			end
-			else TL <= TL + 1;
+			else begin
+				TL <= TL + 1;
+				TCON[2] <= 0; 
+			end
 		end
 		
 		if(wr) begin

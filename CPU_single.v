@@ -2,7 +2,10 @@
 
 module CPU_single (
 	input reset,
-	input clk    // Clock	
+	input clk,    // Clock	
+	input [7:0] switch,
+	output [7:0] led,
+	output [11:0] digi
 );
 
 wire [2:0] PCSrc;
@@ -16,10 +19,15 @@ wire MemRd;
 wire [1:0] MemToReg;
 wire EXTOp;
 wire LUOp;
-reg IRQ;
-initial begin
-	IRQ = 0;
-end
+wire IRQ;
+
+
+// initial begin
+// 	IRQ = 0;
+// end
+
+
+
 wire [31:0] Instruction;
 wire [5:0] ALUFun;
 wire [31:0] PC_plus4;
@@ -65,7 +73,7 @@ PC_add PCA(
 
 
 Inst_Mem IM(
-	.addr(PC),
+	.addr(PC[31:0]),
 	.data(Instruction)
 );
 
@@ -108,6 +116,8 @@ assign EXTOut = EXTOp? {{16{Instruction[15]}}, Instruction[15:0]}:
 
 
 wire [31:0] Data_Mem_Out;
+wire [31:0] Data_PE_Out;
+wire [31:0] Data_Out;
 
 Data_Mem DM(
 	.reset(reset),
@@ -119,7 +129,27 @@ Data_Mem DM(
 	.wdata(DataBus_B)
 );
 
+assign Data_Out =  ALUOut[30]?Data_PE_Out:Data_Mem_Out;
+
 assign DataBus_C = (MemToReg == 2'b00)?ALUOut:
-				   (MemToReg == 2'b01)?Data_Mem_Out:
+				   (MemToReg == 2'b01)?Data_Out:
 				   (MemToReg == 2'b10)?PC_plus4:0;
+
+
+Peripheral PE(
+	.reset (reset),
+	.clk   (clk),
+	.rd    (MemRd),
+	.wr    (MemWr),
+	.addr  (ALUOut),
+	.wdata (DataBus_B),
+	.switch(switch),
+	.rdata (Data_PE_Out),
+	.led   (led),
+	.digi  (digi),
+	.irqout(IRQ)
+);
+
+
+
 endmodule
