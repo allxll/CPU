@@ -149,6 +149,8 @@ assign DataBus_C = (MemToReg == 2'b00)?ALUOut:
 				   (MemToReg == 2'b10)?PC_plus4:0;
 
 
+
+
 Peripheral PE(
 	.reset 	   (reset),
 	.clk       (clk),
@@ -168,6 +170,7 @@ Peripheral PE(
 	.TX_EN     (TX_EN),
 	.TX_DATA   (TX_DATA)
 );
+
 
 
 uart_rx i_uart_rx (
