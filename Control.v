@@ -42,7 +42,7 @@ assign RegDst = (Except || IRQ)? 3:
 				(Instruction[31:26] == 6'h00)? 0: 1;   // R-type instructions
 
 
-assign RegWr = (Instruction[31:26] == 6'h2b || Instruction[31:26] == 6'h04 || Instruction[31:26] == 6'h05 || Instruction[31:26] == 6'h06 || Instruction[31:26] == 6'h07 || 
+assign RegWr = (IRQ || Except)?1:(Instruction[31:26] == 6'h2b || Instruction[31:26] == 6'h04 || Instruction[31:26] == 6'h05 || Instruction[31:26] == 6'h06 || Instruction[31:26] == 6'h07 || 
 					Instruction[31:26] == 6'h01 || Instruction[31:26] == 6'h02 || (Instruction[31:26] == 6'h00 && Instruction[5:0] == 6'h08))? 0: 1;  // sw, bxx*5, j, jr     ps: nop is regarded as sll.
 
 

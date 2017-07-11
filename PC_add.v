@@ -27,7 +27,7 @@ assign plus4 = {PC[31], PC[30:0]+31'h00000004};
 assign JTplusPC = {PC[31:28], JT, 2'b0};
 
 
-always@(negedge reset or posedge clk) begin
+always@(posedge clk) begin
 	if(~reset) begin
 		PC <= RESETPC;
 	end

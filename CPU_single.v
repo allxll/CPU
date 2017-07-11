@@ -10,7 +10,7 @@ module CPU_single (
 	output UART_TX
 );
 
-parameter c_CLKS_PER_BIT    = 10416;
+//parameter c_CLKS_PER_BIT    = 10416;
 
 wire [2:0] PCSrc;
 wire [1:0] RegDst;
@@ -170,7 +170,7 @@ Peripheral PE(
 );
 
 
-uart_rx #(.CLKS_PER_BIT(c_CLKS_PER_BIT)) i_uart_rx (
+uart_rx i_uart_rx (
 	.i_Clock    (clk), 
 	.i_Rx_Serial(UART_RX), 
 	.o_Rx_DV    (RX_STATUS), 
@@ -179,7 +179,7 @@ uart_rx #(.CLKS_PER_BIT(c_CLKS_PER_BIT)) i_uart_rx (
 
 
 
-uart_tx #(.CLKS_PER_BIT(c_CLKS_PER_BIT)) i_uart_tx (
+uart_tx i_uart_tx (
 	.i_Clock    (clk        ),
 	.i_Tx_DV    (TX_EN    ),
 	.i_Tx_Byte  (TX_DATA  ),

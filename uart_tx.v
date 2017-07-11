@@ -12,7 +12,7 @@
 // (10000000)/(115200) = 87
   
 module uart_tx 
-  #(parameter CLKS_PER_BIT)
+//  #(parameter CLKS_PER_BIT)
   (
    input       i_Clock,
    input       i_Tx_DV,
@@ -22,6 +22,7 @@ module uart_tx
    output      o_Tx_Done
    );
   
+  parameter CLKS_PER_BIT    = 10416;
   parameter s_IDLE         = 3'b000;
   parameter s_TX_START_BIT = 3'b001;
   parameter s_TX_DATA_BITS = 3'b010;

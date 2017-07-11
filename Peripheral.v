@@ -84,14 +84,16 @@ end
 
 
 
-always@(negedge reset or posedge clk) begin
+always@(posedge clk) begin
 	if(~reset) begin
 		TH <= 32'b0;
 		TL <= 32'b0;
 		TCON <= 3'b0;	
 		UARTCON <= 5'b0;
-		UART_RXD <= 0;
-		UART_TXD <= 0;
+		UART_RXD <= 32'b0;
+		UART_TXD <= 32'b0;
+		led <= 0;
+		digi <= 0;
 	end
 	else begin
 		if(TCON[0]) begin	//timer is enabled
