@@ -31,7 +31,7 @@ CPU_single processor(
 	.switch(),
 	.led   (led),
 	.digi  (digi),
-	.clk    (clk),
+	.clk    (div_clk),
 	.UART_RX(UART_RX),
 	.UART_TX(UART_TX)
 	);
