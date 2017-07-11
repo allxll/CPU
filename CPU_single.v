@@ -4,9 +4,13 @@ module CPU_single (
 	input reset,
 	input clk,    // Clock	
 	input [7:0] switch,
+	input UART_RX,
 	output [7:0] led,
-	output [11:0] digi
+	output [11:0] digi,
+	output UART_TX
 );
+
+parameter c_CLKS_PER_BIT    = 10416;
 
 wire [2:0] PCSrc;
 wire [1:0] RegDst;
@@ -38,6 +42,15 @@ wire [31:0] DataBus_A;
 wire [31:0] DataBus_B;
 wire [31:0] DataBus_C;
 wire [31:0] PC;
+
+
+wire baudclk;
+wire [7:0] TX_DATA;
+wire TX_EN;
+wire TX_STATUS;
+wire [7:0] RX_DATA;
+wire RX_STATUS;
+
 
 Control CTL(
 	.IRQ        (IRQ),
@@ -137,19 +150,42 @@ assign DataBus_C = (MemToReg == 2'b00)?ALUOut:
 
 
 Peripheral PE(
-	.reset (reset),
-	.clk   (clk),
-	.rd    (MemRd),
-	.wr    (MemWr),
-	.addr  (ALUOut),
-	.wdata (DataBus_B),
-	.switch(switch),
-	.rdata (Data_PE_Out),
-	.led   (led),
-	.digi  (digi),
-	.irqout(IRQ)
+	.reset 	   (reset),
+	.clk       (clk),
+	.rd        (MemRd),
+	.wr        (MemWr),
+	.addr      (ALUOut),
+	.wdata     (DataBus_B),
+	.switch    (switch),
+	.RX_STATUS (RX_STATUS),
+	.TX_STATUS (TX_STATUS),
+	.RX_DATA  (RX_DATA),
+
+	.rdata     (Data_PE_Out),
+	.led       (led),
+	.digi      (digi),
+	.irqout    (IRQ),
+	.TX_EN     (TX_EN),
+	.TX_DATA   (TX_DATA)
 );
 
 
+uart_rx #(.CLKS_PER_BIT(c_CLKS_PER_BIT)) i_uart_rx (
+	.i_Clock    (clk), 
+	.i_Rx_Serial(UART_RX), 
+	.o_Rx_DV    (RX_STATUS), 
+	.o_Rx_Byte  (RX_DATA)
+);
+
+
+
+uart_tx #(.CLKS_PER_BIT(c_CLKS_PER_BIT)) i_uart_tx (
+	.i_Clock    (clk        ),
+	.i_Tx_DV    (TX_EN    ),
+	.i_Tx_Byte  (TX_DATA  ),
+	.o_Tx_Active(TX_STATUS),
+	.o_Tx_Serial(UART_TX),
+	.o_Tx_Done  (  )
+);
 
 endmodule

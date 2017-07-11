@@ -1,5 +1,4 @@
 module ALU_cmp (
-	input A31,
 	input Z,
 	input V,
 	input N,
@@ -18,10 +17,10 @@ wire S6;
 assign S1 = Z;
 assign S2 = ~Z;
 assign S3 = N^V;   // critical path
-nand (S4_1, A31, Z);
-assign S4 = ~S4_1;
-assign S5 = A31;
-assign S6 = S4_1;
+//nand (S4_1, A31, Z);
+assign S4 = N | Z;
+assign S5 = N;
+assign S6 = ~(N | Z);
 
 
 // wire SA, SB;

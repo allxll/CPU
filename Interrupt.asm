@@ -13,8 +13,8 @@ Main:
 	sw $zero, 0($t0)    # set TCON to be 0, stop timer.
 
 	lui $t2, 0xffff
-	ori $t2, $t2, 0xfff6
-	sw $t2, -8($t0)    # set TH to be 0xfffffff6, the 10 clock timer.
+	ori $t2, $t2, 0xffe0
+	sw $t2, -8($t0)    # set TH to be 32? clock timer.
 
 	ori $t2, $t2, 0xffff
 	sw $t2, -4($t0)   # set TL to be 0xffffffff
@@ -29,28 +29,69 @@ Main:
 
 ######################################
 
+	zd:
+		addi $t0,$zero,100 
+		addi $t1,$zero,75 
+	lp1:
+		add $t2,$zero,$t0	
+		add $t0,$zero,$t1	
+		add $t1,$zero,$t2	
+		slt $t3,$t1,$t0		
+		beq $t3,$zero,lp2	
+		add $t2,$zero,$t0	
+		add $t0,$zero,$t1	
+		add $t1,$zero,$t2	
+	lp2:
+		sub $t1,$t1,$t0	
+		slt $t3,$t0,$t1		
+		beq $t3,$zero,we1	
+		j lp2			
+	eq:
+		beq $t1,$zero,end   
+		j lp1
+	end:
 
-		addi $a0, $zero, 3
-		jal Sum
-	Loop:
-		beq $zero, $zero, Loop
-	Sum:
-		addi $sp, $sp, 8
-		sw $ra, -4($sp)
-		sw $a0, 0($sp)
-		slti $t0, $a0, 1
-		beq $t0, $zero, L1
-		xor $v0, $zero, $zero
-		addi $sp, $sp, -8
-		jr $ra
-	L1:
-		addi $a0, $a0, -1
-		jal Sum
-		lw $a0, 0($sp)
-		lw $ra, -4($sp)
-		addi $sp, $sp, -8
-		add $v0, $a0, $v0
-		jr $ra
+		# Uart Evaluation Program
+		#########################
+#	Read:
+#		lw $s0, 24($t0)
+#		andi $s0, $s0, 0x0008 
+#		bgtz $s0, Write
+#		j Read
+#	Write:
+#		sw $zero, 24($t0)   # UARTCON = 5'b0 manually , mainly to reset UARTCON[3]
+#		lw $s2, 20($t0)
+#		addi $s1, $zero, 0
+#		ori $s1, $s1, 0xfe34
+#		sw $s1, 16($t0)
+#	Loop:
+#		blez $zero, Loop
+
+
+
+		# Fisrt Evaluation Program
+		###########################
+#		addi $a0, $zero, 3
+#		jal Sum
+#	Loop:
+#		beq $zero, $zero, Loop
+#	Sum:
+#		addi $sp, $sp, 8
+#		sw $ra, -4($sp)
+#		sw $a0, 0($sp)
+#		slti $t0, $a0, 1
+#		beq $t0, $zero, L1
+#		xor $v0, $zero, $zero
+#		addi $sp, $sp, -8
+#		jr $ra
+#	L1:
+#		addi $a0, $a0, -1
+#		jal Sum
+#		lw $a0, 0($sp)
+#		lw $ra, -4($sp)
+#		addi $sp, $sp, -8
+#		add $v0, $a0, $v0
+#		jr $ra
 
 
 
@@ -79,6 +120,7 @@ Interrupt:
 	sw $t0, 8($sp)
 	add $t0, $zero, $zero
 	lui $t0, 0x4000
+	lw $t1, 8($t0)
 	andi $t1, $t1, 0xfff9
 	sw $t1, 8($t0)  # disable Interruption and clear the interruption status
 
@@ -225,18 +267,18 @@ Decode:             # read $a0,  decode to $t2
 
 Exit:
 	addi $sp, $sp, -36
+	lw $t0, 8($sp)
+	lw $ra, 12($sp)
+	lw $v1, 16($sp)
+	lw $v0, 20($sp)
+	lw $t2, 24($sp)
+	lw $a1, 28($sp)
+	lw $a0, 32($sp)
+	lw $s0, 36($sp)
+	addi $k0, $k0, -4
 	ori $t1, $t1, 0x0002
 	sw $t1, 8($t0)
-	lw $s0, -0($sp)
-	lw $a0, -4($sp)
-	lw $a1, -8($sp)
-	lw $t2, -12($sp)
-	lw $v0, -16($sp)
-	lw $v1, -20($sp)
-	lw $ra, -24($sp)
-	lw $t0, -28($sp)
-	lw $t1, -32($sp)
-	addi $k0, $k0, -4
+	lw $t1, 4($sp)
 	jr $k0
 
 

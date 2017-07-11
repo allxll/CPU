@@ -15,7 +15,7 @@ wire S4;
 ALU_adder Add(A, B, ALUFun[0], Sign, Z, V, N, S1);
 ALU_Boolean Logic(A, B, ALUFun[3:1], S2);
 ALU_shifter Shift(A[4:0], B[31:0], ALUFun[1:0], S3);
-ALU_cmp Cmp(A[31], Z, V, N, ALUFun[3:1], S4);
+ALU_cmp Cmp(Z, V, N, ALUFun[3:1], S4);
 
 always @(*) begin : proc_alu	
 	case (ALUFun[5:4])
