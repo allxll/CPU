@@ -29,28 +29,55 @@ Main:
 
 ######################################
 
-	zd:
-		addi $t0,$zero,100 
-		addi $t1,$zero,75 
+
+	##########################
+	# GCD  Program
+	##########################
+	#  line 14
+	add $v0, $zero, $zero
+	Read:
+		lw $s0, 24($t0)
+		andi $s0, $s0, 0x0008 
+		bgtz $s0, Write
+		j Read
+	Write_1:
+		lw $a0, 20($t0)   # load the first number to $a0
+		addi $v0, $v0, 1
+		j Read
+	Write:
+		sw $zero, 24($t0)    # UARTCON = 5'b0 manually , mainly to reset UARTCON[3]
+		beq $v0, $zero, Write_1
+		lw $a1, 20($t0)     # load the second number to $a1
+
+#	zd:
+#		addi $a0,$zero,100 
+#		addi $a1,$zero,75 
+
 	lp1:
-		add $t2,$zero,$t0	
-		add $t0,$zero,$t1	
-		add $t1,$zero,$t2	
-		slt $t3,$t1,$t0		
+		add $t2,$zero,$a0	
+		add $a0,$zero,$a1	
+		add $a1,$zero,$t2	
+		slt $t3,$a1,$a0		
 		beq $t3,$zero,lp2	
-		add $t2,$zero,$t0	
-		add $t0,$zero,$t1	
-		add $t1,$zero,$t2	
+		add $t2,$zero,$a0	
+		add $a0,$zero,$a1	
+		add $a1,$zero,$t2	
 	lp2:
-		sub $t1,$t1,$t0	
-		slt $t3,$t0,$t1		
-		beq $t3,$zero,we1	
+		sub $a1,$a1,$a0	
+		slt $t3,$a0,$a1	   # 34s	
+		beq $t3,$zero,eq	
 		j lp2			
 	eq:
-		beq $t1,$zero,end   
+		beq $a1,$zero,end   
 		j lp1
 	end:
+		sw $a0, 16($t0)    # send uart
+		sw $a0, 8($t0)     # set led
+	Loop:
+		blez $zero, Loop
 
+
+		#########################
 		# Uart Evaluation Program
 		#########################
 #	Read:
@@ -68,7 +95,7 @@ Main:
 #		blez $zero, Loop
 
 
-
+		##########################
 		# Fisrt Evaluation Program
 		###########################
 #		addi $a0, $zero, 3
@@ -152,60 +179,60 @@ Timer:
 	beq $s0, $v1, Now2
 	sll $v1, $v1, 1
 	beq $s0, $v1, Now3
-Now0:
-    ori $s0, $zero, 0x0200 # AN1
-    andi $a0, $a0, 0x000f  #   lower 4 bits of $a0   --- AN1
-	j Next
-Now1:
-	ori $s0, $zero, 0x0400 # AN2
-	srl $a0, $a1, 4     #   upper 4 bits of $a1  --- AN2
-	j Next
-Now2:
-	ori $s0, $zero, 0x0800 # AN3
-	andi $a0, $a1, 0x000f  #  lower 4 bits of $a1  --- AN3
-	j Next
-Now3:
-	ori $s0, $zero, 0x0100 # AN0
-	srl $a0, $a0, 4    #   upper 4 bits of $a0  --- AN0
-	j Next
-Next:
-	jal Decode
-	or $s0, $s0, $t2
-	sw $s0, 20($t0)
-	j Exit
-Decode:             # read $a0,  decode to $t2
+	Now0:
+	    ori $s0, $zero, 0x0200 # AN1
+	    andi $a3, $a0, 0x000f  #   lower 4 bits of $a0   --- AN1
+		j Next
+	Now1:
+		ori $s0, $zero, 0x0400 # AN2
+		srl $a3, $a1, 4     #   upper 4 bits of $a1  --- AN2
+		j Next
+	Now2:
+		ori $s0, $zero, 0x0800 # AN3
+		andi $a3, $a1, 0x000f  #  lower 4 bits of $a1  --- AN3
+		j Next
+	Now3:
+		ori $s0, $zero, 0x0100 # AN0
+		srl $a3, $a0, 4    #   upper 4 bits of $a0  --- AN0
+		j Next
+	Next:
+		jal Decode
+		or $s0, $s0, $t2
+		sw $s0, 20($t0)
+		j Exit
+Decode:             # read $a3,  decode to $t2
 	add $v0, $zero, $zero   # counter starting from 0
-	beq $a0, $v0, Is0
+	beq $a3, $v0, Is0
 	addi $v0, $v0, 1
-	beq $a0, $v0, Is1
+	beq $a3, $v0, Is1
 	addi $v0, $v0, 1
-	beq $a0, $v0, Is2
+	beq $a3, $v0, Is2
 	addi $v0, $v0, 1
-	beq $a0, $v0, Is3
+	beq $a3, $v0, Is3
 	addi $v0, $v0, 1
-	beq $a0, $v0, Is4
+	beq $a3, $v0, Is4
 	addi $v0, $v0, 1
-	beq $a0, $v0, Is5
+	beq $a3, $v0, Is5
 	addi $v0, $v0, 1
-	beq $a0, $v0, Is6
+	beq $a3, $v0, Is6
 	addi $v0, $v0, 1
-	beq $a0, $v0, Is7
+	beq $a3, $v0, Is7
 	addi $v0, $v0, 1
-	beq $a0, $v0, Is8
+	beq $a3, $v0, Is8
 	addi $v0, $v0, 1
-	beq $a0, $v0, Is9
+	beq $a3, $v0, Is9
 	addi $v0, $v0, 1
-	beq $a0, $v0, IsA
+	beq $a3, $v0, IsA
 	addi $v0, $v0, 1
-	beq $a0, $v0, IsB
+	beq $a3, $v0, IsB
 	addi $v0, $v0, 1
-	beq $a0, $v0, IsC
+	beq $a3, $v0, IsC
 	addi $v0, $v0, 1
-	beq $a0, $v0, IsD
+	beq $a3, $v0, IsD
 	addi $v0, $v0, 1
-	beq $a0, $v0, IsE
+	beq $a3, $v0, IsE
 	addi $v0, $v0, 1
-	beq $a0, $v0, IsF
+	beq $a3, $v0, IsF
 	jr $ra
 	Is0:
 		addi $t2, $zero, 0x0001
@@ -257,12 +284,6 @@ Decode:             # read $a0,  decode to $t2
 		jr $ra
 
 
-#######################################
-#         Uart  Interrupt             #
-####################################### 
-#Uart:
-
-
 
 
 Exit:
@@ -287,3 +308,4 @@ Exit:
 ###################################################
 
 Exception:
+	jr $k0

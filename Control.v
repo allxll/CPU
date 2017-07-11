@@ -15,15 +15,18 @@ module Control (
 	output LUOp
 );
 
-
-assign PCSrc =  IRQ? 3'b100:    // Interrupt
-
-				!((Instruction[31:26] == 6'h00 && (Instruction[5:0] == 6'h20 || Instruction[5:0] == 6'h2a || Instruction[5:0] == 6'h03 || Instruction[5:0] == 6'h02 || 
+wire Except;
+assign Except = !((Instruction[31:26] == 6'h00 && (Instruction[5:0] == 6'h20 || Instruction[5:0] == 6'h2a || Instruction[5:0] == 6'h03 || Instruction[5:0] == 6'h02 || 
 									Instruction[5:0] == 6'h21 || Instruction[5:0] == 6'h22 || Instruction[5:0] == 6'h23 || Instruction[5:0] == 6'h24  || Instruction[5:0] == 6'h25 || 
 									Instruction[5:0] == 6'h26 || Instruction[5:0] == 6'h27 || Instruction[5:0] == 6'h00 || Instruction[5:0] == 6'h08 || Instruction[5:0] == 6'h09)) || 
 				Instruction[31:26] == 6'h01 || Instruction[31:26] == 6'h06 || Instruction[31:26] == 6'h0a || Instruction[31:26] == 6'h0b || Instruction[31:26] == 6'h05 || Instruction[31:26] == 6'h04 || 
 				Instruction[31:26] == 6'h23 || Instruction[31:26] == 6'h2b || Instruction[31:26] == 6'h0f || Instruction[31:26] == 6'h08 || Instruction[31:26] == 6'h09 || Instruction[31:26] == 6'h0c || 
-				Instruction[31:26] == 6'h02 || Instruction[31:26] == 6'h03 || Instruction[31:26] == 6'h07 || Instruction[31:26] == 6'h0d)? 3'b101:    // Exception
+				Instruction[31:26] == 6'h02 || Instruction[31:26] == 6'h03 || Instruction[31:26] == 6'h07 || Instruction[31:26] == 6'h0d);
+
+
+assign PCSrc =  IRQ? 3'b100:    // Interrupt
+
+				Except? 3'b101:    // Exception
 
 				(Instruction[31:26] == 6'h02 || Instruction[31:26] == 6'h03 )? 3'b010:  // j, jal
 
@@ -34,7 +37,7 @@ assign PCSrc =  IRQ? 3'b100:    // Interrupt
 
 
 
-assign RegDst = IRQ? 3: 
+assign RegDst = (Except || IRQ)? 3: 
 				(Instruction[31:26] == 6'h03)? 2:  // jal
 				(Instruction[31:26] == 6'h00)? 0: 1;   // R-type instructions
 
@@ -71,8 +74,9 @@ assign MemRd = (Instruction[31:26] == 6'h23)? 1:0; // lw
 
 assign MemWr = (Instruction[31:26] == 6'h2b)? 1:0; //sw
 
-assign MemToReg = (Instruction[31:26] == 6'h23)? 1: // lw
-					(IRQ || Instruction[31:26] == 6'h03 || (Instruction[31:26] == 6'h00 && Instruction[5:0] == 6'h09))? 2: 0;  // jal, jalr, Interrupt
+assign MemToReg = (Except || IRQ || Instruction[31:26] == 6'h03 || (Instruction[31:26] == 6'h00 && Instruction[5:0] == 6'h09))? 2:  // jal, jalr, Interrupt, Exception
+					(Instruction[31:26] == 6'h23)? 1:0; // lw
+					
 
 
 
