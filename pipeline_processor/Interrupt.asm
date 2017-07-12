@@ -8,10 +8,23 @@ Main:
 #		Timer Startup				#
 #####################################
 
-	lui $t0, 0x4000
-	ori $t0, $t0, 0x0008
+	
+
+	lui $t0, 0x4000                    # 0c
+	ori $t0, $t0, 0x0008			   # 10
 
 	sw $zero, 0($t0)    # set TCON to be 0, stop timer.
+
+##############################################
+##		Pipeline  Test Purpose Only          #
+##############################################
+#	addi $t1, $zero, 1
+#	sw $t1, 0($t0)    #  set TCON = 1, start timer, disable intterupt
+#	addi $t1, $t1, -1
+#	lw $t3, 0($t0)       # 20
+#	add, $t1, $t1, $t3 
+#############################################
+
 
 	lui $t2, 0xffff
 	ori $t2, $t2, 0xffe0
@@ -22,6 +35,11 @@ Main:
 
 	addi $t1, $zero, 0   
 	sw $t1, 0($t0)     # set TCON = 0, stop timer, disable interrupt
+
+
+
+
+
 
 ######################################
 	
@@ -105,7 +123,7 @@ Main:
 		addi $a0, $zero, 3
 		jal Sum
 	Loop:
-		beq $zero, $zero, Loop
+		beq $zero, $zero, Loop     # 3c  
 	Sum:
 		addi $sp, $sp, 8
 		sw $ra, -4($sp)

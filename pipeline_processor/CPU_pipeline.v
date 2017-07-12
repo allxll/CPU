@@ -137,11 +137,11 @@ module CPU_pipeline (
 	wire [ 4:0] RegisterRd_MEM_WB  ;
 	wire [ 4:0] RegisterRt_MEM_WB  ;
 	wire [31:0] PC_plus4_MEM_WB    ;
-	wire [31:0] Data_Mem_Out_MEM_WB;
 	wire [31:0] ALUOut_MEM_WB      ;
 	wire [ 1:0] MemtoReg_MEM_WB    ;
 	wire [ 1:0] RegDst_MEM_WB      ;
 	wire        RegWr_MEM_WB       ;
+	wire [31:0] Data_Out_MEM_WB	   ;
 
 	// Data calculated in the WB stage
 	wire [ 4:0] Address_dest_WB;
@@ -165,9 +165,9 @@ module CPU_pipeline (
 	assign ConBA_ID    = PC_plus4_IF_ID + {EXTOut_ID[29:0], 2'b00};
 	assign JTplusPC_ID = {PC_IF_ID[31:28], JT_IF_ID, 2'b0};
 
-	assign ALU_reg_in1_EX = (ForwardA==2'b01)?((MemtoReg_MEM_WB==2'b01)?Data_Out_MEM:ALUOut_MEM_WB):
+	assign ALU_reg_in1_EX = (ForwardA==2'b01)?((MemtoReg_MEM_WB==2'b01)?Data_Out_MEM_WB:ALUOut_MEM_WB):
 		(ForwardA==2'b10)?ALUOut_EX_MEM:DataBus_A_ID_EX; // Data_Out_MEM will be calculated later in the MEM stage
-	assign ALU_reg_in2_EX = (ForwardB==2'b01)?((MemtoReg_MEM_WB==2'b01)?Data_Out_MEM:ALUOut_MEM_WB):
+	assign ALU_reg_in2_EX = (ForwardB==2'b01)?((MemtoReg_MEM_WB==2'b01)?Data_Out_MEM_WB:ALUOut_MEM_WB):
 		(ForwardB==2'b10)?ALUOut_EX_MEM:DataBus_B_ID_EX;
 	assign ALU_in1_EX = ALUSrc1_ID_EX?Shamt_ID_EX:ALU_reg_in1_EX;
 	assign ALU_in2_EX = ALUSrc2_ID_EX?LUOut_ID_EX:ALU_reg_in2_EX;
@@ -178,7 +178,7 @@ module CPU_pipeline (
 		(RegDst_MEM_WB == 2'b01)?RegisterRt_MEM_WB:
 		(RegDst_MEM_WB == 2'b10)?5'b11111:5'b11010;
 	assign DataBus_C_WB = (MemtoReg_MEM_WB == 2'b00)?ALUOut_MEM_WB:
-		(MemtoReg_MEM_WB == 2'b01)?Data_Out_MEM:
+		(MemtoReg_MEM_WB == 2'b01)?Data_Out_MEM_WB:
 		(MemtoReg_MEM_WB == 2'b10)?PC_plus4_MEM_WB:0;
 
 
@@ -337,7 +337,7 @@ module CPU_pipeline (
 		.RegisterRt_out(RegisterRt_EX_MEM),
 		.MemWr         (MemWr_ID_EX      ),
 		.MemRd         (MemRd_ID_EX      ),
-		.DataBus_B     (DataBus_B_ID_EX  ),
+		.DataBus_B     (ALU_reg_in2_EX   ),   // this is the value after forwarding
 		.ALUOut        (ALUOut_EX        ),
 		.MemWr_out     (MemWr_EX_MEM     ),
 		.MemRd_out     (MemRd_EX_MEM     ),
@@ -391,7 +391,7 @@ module CPU_pipeline (
 		.clk             (clk                ),
 		.reset           (reset              ),
 		.PC_plus4        (PC_plus4_EX_MEM    ),
-		.Data_Mem_Out    (Data_Mem_Out_MEM   ),
+		.Data_Mem_Out    (Data_Out_MEM   ),
 		.ALUOut          (ALUOut_EX_MEM      ),
 		.RegDst          (RegDst_EX_MEM      ),
 		.RegWr           (RegWr_EX_MEM       ),
@@ -400,7 +400,7 @@ module CPU_pipeline (
 		.RegisterRt      (RegisterRt_EX_MEM  ),
 
 		.PC_plus4_out    (PC_plus4_MEM_WB    ),
-		.Data_Mem_Out_out(Data_Mem_Out_MEM_WB),
+		.Data_Mem_Out_out(Data_Out_MEM_WB),
 		.ALUOut_out      (ALUOut_MEM_WB      ),
 		.RegDst_out      (RegDst_MEM_WB      ),
 		.RegWr_out       (RegWr_MEM_WB       ),
