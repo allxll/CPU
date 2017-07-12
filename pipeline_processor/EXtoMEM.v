@@ -6,8 +6,8 @@ module  EXtoMEM(
     output reg [31:0]PC_plus4_out,
 
     // forward module
-    input [5:0] RegisterRt,
-    output reg [5:0] RegisterRt_out,
+    input [4:0] RegisterRt,
+    output reg [4:0] RegisterRt_out,
 
     // MEM
     input MemWr,
@@ -24,11 +24,11 @@ module  EXtoMEM(
     input [1:0] RegDst,
     input RegWr,
     input [1:0] MemToReg,
-    input [5:0] RegisterRd,
+    input [4:0] RegisterRd,
     output reg [1:0] RegDst_out,
     output reg RegWr_out,
     output reg [1:0] MemToReg_out,
-    output reg [5:0] RegisterRd_out
+    output reg [4:0] RegisterRd_out
 );
     
 always@(posedge clk) begin

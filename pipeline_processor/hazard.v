@@ -1,8 +1,8 @@
 module hazard (
 	input MemRd_ID_EX,
-	input RegisterRt_ID_EX,
-	input RegisterRs_IF_ID,
-	input RegisterRt_IF_ID,
+	input [4:0] RegisterRt_ID_EX,
+	input [4:0] RegisterRs_IF_ID,
+	input [4:0] RegisterRt_IF_ID,
 	output reg PCWr,
 	output reg IF_ID_Wr,
 	output reg ID_EX_Flush
