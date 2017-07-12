@@ -1,7 +1,7 @@
 module Control (
-	input IRQ,
+	// input IRQ,
 	input [31:0] Instruction,
-	output [2:0] PCSrc,
+	// output [2:0] PCSrc,
 	output [1:0] RegDst,
 	output RegWr,
 	output ALUSrc1,
@@ -13,6 +13,8 @@ module Control (
 	output [1:0] MemToReg,
 	output EXTOp,
 	output LUOp
+	output isJ,
+	output isBranch
 );
 
 wire Except;
@@ -24,16 +26,16 @@ assign Except = !((Instruction[31:26] == 6'h00 && (Instruction[5:0] == 6'h20 || 
 				Instruction[31:26] == 6'h02 || Instruction[31:26] == 6'h03 || Instruction[31:26] == 6'h07 || Instruction[31:26] == 6'h0d);
 
 
-assign PCSrc =  IRQ? 3'b100:    // Interrupt
+// assign PCSrc =  IRQ? 3'b100:    // Interrupt
 
-				Except? 3'b101:    // Exception
+// 				Except? 3'b101:    // Exception
 
-				(Instruction[31:26] == 6'h02 || Instruction[31:26] == 6'h03 )? 3'b010:  // j, jal
+// 				(Instruction[31:26] == 6'h02 || Instruction[31:26] == 6'h03 )? 3'b010:  // j, jal
 
-				(Instruction[31:26] == 6'h00 && (Instruction[5:0] == 6'h08 || Instruction[5:0] == 6'h09))? 3'b011:  // jr jalr
+// 				(Instruction[31:26] == 6'h00 && (Instruction[5:0] == 6'h08 || Instruction[5:0] == 6'h09))? 3'b011:  // jr jalr
 
-				(Instruction[31:26] == 6'h04 || Instruction[31:26] == 6'h05 || Instruction[31:26] == 6'h06 || Instruction[31:26] == 6'h07 || Instruction[31:26] == 6'h01)? 3'b001:   // bxx*5
-				3'b000;
+// 				(Instruction[31:26] == 6'h04 || Instruction[31:26] == 6'h05 || Instruction[31:26] == 6'h06 || Instruction[31:26] == 6'h07 || Instruction[31:26] == 6'h01)? 3'b001:   // bxx*5
+// 				3'b000;
 
 
 
