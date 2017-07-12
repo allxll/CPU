@@ -50,7 +50,7 @@ module CPU_pipeline (
 	wire [1:0] MemToReg_ID;
 	wire       EXTOp_ID   ;
 	wire       LUOp_ID    ;
-	wire       isJ_ID     ;
+	wire  [1:0]     isJ_ID ;
 	wire       isBranch_ID;
 
 	// Signal in IF/ID register
@@ -152,9 +152,11 @@ module CPU_pipeline (
 
 	// calculations listed below (mainly muxes, except for 2 adders)
 
-	assign PC_in_J     = isJ_ID?JTplusPC_ID:PC_plus4_IF;
+	assign PC_in_J     = (isJ_ID == 2'b01)?JTplusPC_ID:
+						 (isJ_ID == 2'b10)?DataBus_A_ID:
+						 PC_plus4_IF;
 	assign PC_in       = (isBranch_ID_EX && ALUOut_EX)?ConBA_ID_EX:PC_in_J;
-	assign IF_ID_Flush = (isJ_ID || (isBranch_ID_EX && ALUOut_EX))?1:0;
+	assign IF_ID_Flush = ((isJ_ID != 2'b0 )|| (isBranch_ID_EX && ALUOut_EX))?1:0;
 	assign ID_EX_Flush = (ID_EX_Flush_Hazard || (isBranch_ID_EX && ALUOut_EX))?1:0;
 
 	assign PC_plus4_IF = {PC_IF[31], PC_IF[30:0]+31'h00000004};

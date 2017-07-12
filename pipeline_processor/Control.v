@@ -13,15 +13,15 @@ module Control (
 	output [ 1:0] MemToReg   ,
 	output        EXTOp      ,
 	output        LUOp       ,
-	output        isJ        ,
+	output [1:0 ] isJ        ,
 	output        isBranch
 );
 
 
 	wire Except;
 
-	assign isJ = ((Instruction[31:26] == 6'h0 && (Instruction[5:0] == 6'h08 || Instruction[5:0] == 6'h09))
-				  || Instruction[31:26] == 6'h03 || Instruction[31:26] == 6'h02)?1:0;
+	assign isJ = (Instruction[31:26] == 6'h0 && (Instruction[5:0] == 6'h08 || Instruction[5:0] == 6'h09))?2'b10:  // jr, jalr 
+				 (Instruction[31:26] == 6'h03 || Instruction[31:26] == 6'h02)?2'b01:2'b0;   // j, jal
 
 	assign isBranch = (Instruction[31:26] == 6'h01 || Instruction[31:26] == 6'h04 || 
 					Instruction[31:26] == 6'h05 || Instruction[31:26] == 6'h06 || Instruction[31:26] == 6'h07)?1:0;

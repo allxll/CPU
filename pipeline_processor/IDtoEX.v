@@ -81,6 +81,7 @@ end
       //MemRd_out<=0;
       RegWr_out <= 0;
       MemRd_out <= 0;
+      isBranch_out <= 0;
     end
     else begin
       PC_plus4_out   <= PC_plus4;

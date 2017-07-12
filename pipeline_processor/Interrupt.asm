@@ -125,18 +125,18 @@ Main:
 	Loop:
 		beq $zero, $zero, Loop     # 3c  
 	Sum:
-		addi $sp, $sp, 8
-		sw $ra, -4($sp)
+		addi $sp, $sp, 8    # 40
+		sw $ra, -4($sp)     # 
 		sw $a0, 0($sp)
 		slti $t0, $a0, 1
-		beq $t0, $zero, L1
+		beq $t0, $zero, L1   # 50
 		xor $v0, $zero, $zero
 		addi $sp, $sp, -8
-		jr $ra
+		jr $ra       #  23
 	L1:
-		addi $a0, $a0, -1
-		jal Sum
-		lw $a0, 0($sp)
+		addi $a0, $a0, -1   # 60
+		jal Sum             #  64
+		lw $a0, 0($sp)      # 68
 		lw $ra, -4($sp)
 		addi $sp, $sp, -8
 		add $v0, $a0, $v0
