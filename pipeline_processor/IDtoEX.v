@@ -22,7 +22,9 @@ module IDtoEX (
   input      [31:0] Immediate     ,
   input      [ 4:0] Shamt         ,
   input             isBranch      ,
+  input      [31:0] ConBA         ,
   output reg        isBranch_out  ,
+  output reg [31:0] ConBA_ID_EX   ,
   output reg [ 4:0] RegisterRs_out,
   output reg [ 4:0] RegisterRt_out,
   output reg [ 5:0] ALUFun_out    ,
@@ -49,7 +51,27 @@ module IDtoEX (
   output reg [ 4:0] RegisterRd_out
 );
 
-
+initial begin
+  isBranch_out   <= 0;
+  RegisterRs_out <= 0;
+  RegisterRt_out <= 0;
+  ALUFun_out     <= 0;
+  ALUSrc1_out    <= 0;
+  ALUSrc2_out    <= 0;
+  DataBus_A_out  <= 0;
+  DataBus_B_out  <= 0;
+  Sign_out       <= 0;
+  Immediate_out  <= 0;
+  Shamt_out    <= 0;
+  RegWr_out      <= 0;
+  MemToReg_out   <= 0;
+  RegDst_out     <= 0;
+  RegisterRd_out   <= 0;
+  MemRd_out     <= 0;
+  MemWr_out     <= 0;
+  PC_plus4_out <= 0;
+  ConBA_ID_EX <= 0;
+end
 
 
 
@@ -83,6 +105,7 @@ module IDtoEX (
       RegWr_out      <= RegWr;
       MemToReg_out   <= MemToReg;
       RegisterRd_out <= RegisterRd;
+      ConBA_ID_EX <= ConBA;
     end
 //      EXTOp_out<=EXTOp;
     //     LUOp_out<=LUOp;

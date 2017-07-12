@@ -31,6 +31,21 @@ module  EXtoMEM(
     output reg [4:0] RegisterRd_out
 );
     
+
+initial begin
+    PC_plus4_out <= 0;
+    RegisterRt_out <= 0;
+    MemWr_out <= 0;
+    MemRd_out <= 0;
+    DataBus_B_out <= 0;
+    ALUOut_out <= 0;
+    RegDst_out <= 0;
+    RegWr_out <= 0;
+    MemToReg_out <= 0;
+    RegisterRd_out <= 0;
+end
+
+
 always@(posedge clk) begin
     if(~reset) begin
         MemWr_out <= 0;

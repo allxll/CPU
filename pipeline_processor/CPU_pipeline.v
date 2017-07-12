@@ -10,11 +10,15 @@ module CPU_pipeline (
 	output        UART_TX
 );
 
+	// Uart signals
+	wire TX_EN;
+	wire [7:0] RX_DATA;
+	wire [7:0] TX_DATA;
+	wire TX_STATUS;
+	wire RX_STATUS;
+
+
 //parameter c_CLKS_PER_BIT    = 10416;
-//parameter ILLOP = 32'h80000004;
-//parameter XADR = 32'h80000008;
-//	parameter RESETPC = 32'h00000000;
-//parameter RESETPC = 32'h80000000;
 
 	wire        IRQ               ; // interruption
 	wire [31:0] PC_in             ;
@@ -24,19 +28,15 @@ module CPU_pipeline (
 	wire        PCWr              ;
 	wire [31:0] PC_in_J           ;
 	wire        ID_EX_Flush_Hazard;
-	assign PC_in_J     = isJ_ID?JTplusPC_ID:PC_plus4_IF;
-	assign PC_in       = isBranch_ID_EX?ConBA_ID_EX:PC_in_J;
-	assign IF_ID_Flush = (isJ_ID || (isBranch_ID_EX && ALUOut_EX))?1:0;
-	assign ID_EX_Flush = (ID_EX_Flush_Hazard || (isBranch_ID_EX && ALUOut_EX))?1:0;
-
 
 
 	// Signals in the IF stage
 	wire [31:0] Instruction_IF;
 	wire [31:0] PC_IF         ;
+
 	// Calculation done in the IF stage.
 	wire [31:0] PC_plus4_IF;
-	assign PC_plus4_IF = {PC_IF[31], PC_IF[30:0]+31'h00000004};
+
 
 	// Control signals generated in ID stage.
 	wire [1:0] RegDst_ID  ;
@@ -63,7 +63,6 @@ module CPU_pipeline (
 	wire [ 4:0] RegisterRt_IF_ID ;
 	wire [ 4:0] RegisterRs_IF_ID ;
 	wire [25:0] JT_IF_ID         ;
-	//   Instroction decode in the ID stage
 
 
 	//  Calculation in ID stage.
@@ -71,11 +70,7 @@ module CPU_pipeline (
 	wire [31:0] LUOut_ID   ;
 	wire [31:0] ConBA_ID   ;
 	wire [31:0] JTplusPC_ID;
-	assign LUOut_ID  = LUOp_ID? {Imm16_IF_ID, 16'b0}: EXTOut_ID;
-	assign EXTOut_ID = EXTOp_ID? {{16{Imm16_IF_ID[15]}}, Imm16_IF_ID}:
-		{16'b0, Imm16_IF_ID};
-	assign ConBA_ID    = PC_plus4_IF_ID + {EXTOut_ID[29:0], 2'b00};
-	assign JTplusPC_ID = {PC_IF_ID[31:28], JT_IF_ID, 2'b0};
+
 
 	//  Data read from register pile in ID stage
 	wire [31:0] DataBus_A_ID;
@@ -107,18 +102,13 @@ module CPU_pipeline (
 	//  Data calculated in EX stage, including forwarding logic and ALU calculation
 	wire [ 1:0] ForwardA      ;
 	wire [ 1:0] ForwardB      ;
-	wire        ForwardMEM    ; // to handle lw-sw hazard
+	wire        ForwardMEM    ; // to handle lw-sw hazard (to implement)
 	wire [31:0] ALUOut_EX     ;
 	wire [31:0] ALU_in1_EX    ;
 	wire [31:0] ALU_in2_EX    ;
 	wire [31:0] ALU_reg_in1_EX;
 	wire [31:0] ALU_reg_in2_EX;
-	assign ALU_reg_in1_EX = (ForwardA==2'b01)?((MemtoReg_MEM_WB==2'b01)?Data_Out_MEM:ALUOut_MEM_WB):
-		(ForwardA==2'b10)?ALUOut_EX_MEM:DataBus_A_ID_EX; // Data_Out_MEM will be calculated later in the MEM stage
-	assign ALU_reg_in2_EX = (ForwardB==2'b01)?((MemtoReg_MEM_WB==2'b01)?Data_Out_MEM:ALUOut_MEM_WB):
-		(ForwardB==2'b10)?ALUOut_EX_MEM:DataBus_B_ID_EX;
-	assign ALU_in1_EX = ALUSrc1_ID_EX?Shamt_ID_EX:ALU_reg_in1_EX;
-	assign ALU_in2_EX = ALUSrc2_ID_EX?LUOut_ID_EX:ALU_reg_in2_EX;
+
 
 
 
@@ -140,7 +130,6 @@ module CPU_pipeline (
 
 	// Data calculated in the MEM stage
 	wire [31:0] Data_Out_MEM;
-	assign Data_Out_MEM = ALUOut_EX_MEM[30]?Data_PE_Out_MEM:Data_Mem_Out_MEM;
 
 
 
@@ -157,6 +146,34 @@ module CPU_pipeline (
 	// Data calculated in the WB stage
 	wire [ 4:0] Address_dest_WB;
 	wire [31:0] DataBus_C_WB   ;
+
+
+
+
+	// calculations listed below (mainly muxes, except for 2 adders)
+
+	assign PC_in_J     = isJ_ID?JTplusPC_ID:PC_plus4_IF;
+	assign PC_in       = (isBranch_ID_EX && ALUOut_EX)?ConBA_ID_EX:PC_in_J;
+	assign IF_ID_Flush = (isJ_ID || (isBranch_ID_EX && ALUOut_EX))?1:0;
+	assign ID_EX_Flush = (ID_EX_Flush_Hazard || (isBranch_ID_EX && ALUOut_EX))?1:0;
+
+	assign PC_plus4_IF = {PC_IF[31], PC_IF[30:0]+31'h00000004};
+
+	assign LUOut_ID  = LUOp_ID? {Imm16_IF_ID, 16'b0}: EXTOut_ID;
+	assign EXTOut_ID = EXTOp_ID? {{16{Imm16_IF_ID[15]}}, Imm16_IF_ID}:
+		{16'b0, Imm16_IF_ID};
+	assign ConBA_ID    = PC_plus4_IF_ID + {EXTOut_ID[29:0], 2'b00};
+	assign JTplusPC_ID = {PC_IF_ID[31:28], JT_IF_ID, 2'b0};
+
+	assign ALU_reg_in1_EX = (ForwardA==2'b01)?((MemtoReg_MEM_WB==2'b01)?Data_Out_MEM:ALUOut_MEM_WB):
+		(ForwardA==2'b10)?ALUOut_EX_MEM:DataBus_A_ID_EX; // Data_Out_MEM will be calculated later in the MEM stage
+	assign ALU_reg_in2_EX = (ForwardB==2'b01)?((MemtoReg_MEM_WB==2'b01)?Data_Out_MEM:ALUOut_MEM_WB):
+		(ForwardB==2'b10)?ALUOut_EX_MEM:DataBus_B_ID_EX;
+	assign ALU_in1_EX = ALUSrc1_ID_EX?Shamt_ID_EX:ALU_reg_in1_EX;
+	assign ALU_in2_EX = ALUSrc2_ID_EX?LUOut_ID_EX:ALU_reg_in2_EX;
+
+	assign Data_Out_MEM = ALUOut_EX_MEM[30]?Data_PE_Out_MEM:Data_Mem_Out_MEM;
+
 	assign Address_dest_WB = (RegDst_MEM_WB == 2'b00)?RegisterRd_MEM_WB:
 		(RegDst_MEM_WB == 2'b01)?RegisterRt_MEM_WB:
 		(RegDst_MEM_WB == 2'b10)?5'b11111:5'b11010;
@@ -168,8 +185,8 @@ module CPU_pipeline (
 
 
 
-/////////////////////////////////////
-	//   Module instances //
+///////////////////////////////////////
+///////   Module instances ////////////
 ///////////////////////////////////////
 	PC i_PC (
 		.PCWr (PCWr ),
@@ -276,7 +293,9 @@ module CPU_pipeline (
 		.RegisterRd_out(RegisterRd_ID_EX),
 		.RegDst_out    (RegDst_ID_EX    ),
 		.isBranch      (isBranch_ID     ),
-		.isBranch_out  (isBranch_ID_EX  )
+		.isBranch_out  (isBranch_ID_EX  ),
+		.ConBA         (ConBA_ID),
+		.ConBA_ID_EX   (ConBA_ID_EX)
 	);
 
 
@@ -290,6 +309,9 @@ module CPU_pipeline (
 		.MemtoReg_MEM_WB  (MemtoReg_MEM_WB  ),
 		.MemWr_EX_MEM     (MemWr_EX_MEM     ),
 		.RegisterRt_EX_MEM(RegisterRt_EX_MEM),
+		.RegDst_MEM_WB    (RegDst_MEM_WB),
+		.RegDst_EX_MEM    (RegDst_EX_MEM),
+		.RegisterRt_MEM_WB(RegisterRt_MEM_WB),
 		.ForwardA         (ForwardA         ),
 		.ForwardB         (ForwardB         ),
 		.ForwardMEM       (ForwardMEM       )
@@ -376,13 +398,15 @@ module CPU_pipeline (
 		.MemToReg        (MemToReg_EX_MEM    ),
 		.RegisterRd      (RegisterRd_EX_MEM  ),
 		.RegisterRt      (RegisterRt_EX_MEM  ),
+
 		.PC_plus4_out    (PC_plus4_MEM_WB    ),
 		.Data_Mem_Out_out(Data_Mem_Out_MEM_WB),
 		.ALUOut_out      (ALUOut_MEM_WB      ),
 		.RegDst_out      (RegDst_MEM_WB      ),
 		.RegWr_out       (RegWr_MEM_WB       ),
 		.RegisterRd_out  (RegisterRd_MEM_WB  ),
-		.RegisterRt_out  (RegisterRt_MEM_WB  )
+		.RegisterRt_out  (RegisterRt_MEM_WB  ),
+		.MemToReg_out    (MemtoReg_MEM_WB)
 	);
 
 	hazard i_hazard (
@@ -406,11 +430,7 @@ module CPU_pipeline (
 		.o_Rx_Byte  (RX_DATA  )
 	);
 
-	// wire TX_EN;
-	// wire [7:0] RX_DATA;
-	// wire [7:0] TX_DATA;
-	// wire TX_STATUS;
-	// wire RX_STATUS;
+
 
 	uart_tx i_uart_tx (
 		.i_Clock    (clk      ),

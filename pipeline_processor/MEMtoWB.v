@@ -19,19 +19,30 @@ module MEMtoWB (
     output reg [ 4:0] RegisterRd_out  ,
     output reg [ 4:0] RegisterRt_out
 );
+initial begin 
+    PC_plus4_out     <= 0;
+    Data_Mem_Out_out <= 0;
+    ALUOut_out       <= 0;
+    RegDst_out       <= 0;
+    RegWr_out        <= 0;
+    MemToReg_out     <= 0;
+    RegisterRd_out   <= 0;
+    RegisterRt_out <= 0;
+end
 
     always@(posedge clk) begin
         if(~reset) begin
             RegWr_out <= 0;
+        end else begin 
+            PC_plus4_out     <= PC_plus4;
+            Data_Mem_Out_out <= Data_Mem_Out;
+            ALUOut_out       <= ALUOut;
+            RegDst_out       <= RegDst;
+            RegWr_out        <= RegWr;
+            MemToReg_out     <= MemToReg;
+            RegisterRt_out   <= RegisterRt;
+            RegisterRd_out   <= RegisterRd;
         end
-        PC_plus4_out     <= PC_plus4;
-        Data_Mem_Out_out <= Data_Mem_Out;
-        ALUOut_out       <= ALUOut;
-        RegDst_out       <= RegDst;
-        RegWr_out        <= RegWr;
-        MemToReg_out     <= MemToReg;
-        RegisterRt_out   <= RegisterRt;
-        RegisterRd_out   <= RegisterRd;
     end
 
 endmodule

@@ -18,7 +18,17 @@ module IFtoID (
   output reg [25:0] JT_IF_ID
 );
 
-
+initial begin
+  Instruction_out  <= 0;
+  PC_plus4_out     <= 0;
+  PC_out           <= 0;
+  Imm16_IF_ID      <= 0;
+  Shamt_IF_ID      <= 0;
+  RegisterRd_IF_ID <= 0;
+  RegisterRt_IF_ID <= 0;
+  RegisterRs_IF_ID <= 0;
+  JT_IF_ID <= 0;
+end
 
   always@(posedge clk) begin
     if(~reset || IF_ID_Flush) begin
@@ -39,6 +49,7 @@ module IFtoID (
       RegisterRs_IF_ID <= Instruction[25:21];
       JT_IF_ID         <= Instruction[25:0];
       Imm16_IF_ID      <= Instruction[15:0];
+      PC_out <= PC_in;
     end
 
   end
