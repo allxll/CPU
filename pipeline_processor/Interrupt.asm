@@ -53,50 +53,50 @@ Main:
 	# GCD  Program
 	##########################
 	#  line 14
-#	add $v0, $zero, $zero
-#	Read:
-#		lw $s0, 24($t0)
-#		andi $s0, $s0, 0x0008 
-#		bgtz $s0, Write
-#		j Read
-#	Write_1:
-#		lw $a0, 20($t0)   # load the first number to $a0
-#		addi $v0, $v0, 1
-#		j Read
-#	Write:
-#		sw $zero, 24($t0)    # UARTCON = 5'b0 manually , mainly to reset UARTCON[3]
-#		beq $v0, $zero, Write_1
-#		lw $a1, 20($t0)     # load the second number to $a1
-#
-#
-#	initial:
-#		add $s0, $a0, $zero
-#		add $s1, $a1, $zero
-#
-#	lp1:
-#		add $t2,$zero,$s0	
-#		add $s0,$zero,$s1	
-#		add $s1,$zero,$t2	
-#		slt $t3,$s1,$s0		
-#		beq $t3,$zero,lp2	
-#		add $t2,$zero,$s0	
-#		add $s0,$zero,$s1	
-#		add $s1,$zero,$t2	
-#	lp2:
-#		sub $s1,$s1,$s0	
-#		slt $t3,$s0,$s1	   # 36s	
-#		beq $t3,$zero,eq	
-#		j lp2			
-#	eq:
-#		beq $s1,$zero,end   
-#		j lp1
-#	end:
-#		sw $s0, 16($t0)    # send uart
-#		sw $s0, 4($t0)     # set led
-#		addi $t1, $zero, 3
+	add $v0, $zero, $zero
+	Read:
+		lw $s0, 24($t0)
+		andi $s0, $s0, 0x0008 
+		bgtz $s0, Write
+		j Read
+	Write_1:
+		lw $a0, 20($t0)   # load the first number to $a0
+		addi $v0, $v0, 1
+		j Read
+	Write:
+		sw $zero, 24($t0)    # UARTCON = 5'b0 manually , mainly to reset UARTCON[3]
+		beq $v0, $zero, Write_1
+		lw $a1, 20($t0)     # load the second number to $a1
+
+
+	initial:
+		add $s0, $a0, $zero
+		add $s1, $a1, $zero
+
+	lp1:
+		add $t2,$zero,$s0	
+		add $s0,$zero,$s1	
+		add $s1,$zero,$t2	
+		slt $t3,$s1,$s0		
+		beq $t3,$zero,lp2	
+		add $t2,$zero,$s0	
+		add $s0,$zero,$s1	
+		add $s1,$zero,$t2	
+	lp2:
+		sub $s1,$s1,$s0	
+		slt $t3,$s0,$s1	   # 36s	
+		beq $t3,$zero,eq	
+		j lp2			
+	eq:
+		beq $s1,$zero,end   
+		j lp1
+	end:
+		sw $s0, 16($t0)    # send uart
+		sw $s0, 4($t0)     # set led
+		addi $t1, $zero, 3
 #		sw $t1, 0($t0)    #  start timer, enable interruption
-#	Loop:
-#		blez $zero, Loop
+	Loop:
+		blez $zero, Loop
 
 
 		#########################
@@ -117,30 +117,30 @@ Main:
 #		blez $zero, Loop
 
 
-		##########################
-		# Fisrt Evaluation Program
-		###########################
-		addi $a0, $zero, 3
-		jal Sum
-	Loop:
-		beq $zero, $zero, Loop     # 3c  
-	Sum:
-		addi $sp, $sp, 8    # 40
-		sw $ra, -4($sp)     # 
-		sw $a0, 0($sp)
-		slti $t0, $a0, 1
-		beq $t0, $zero, L1   # 50
-		xor $v0, $zero, $zero
-		addi $sp, $sp, -8
-		jr $ra       #  23
-	L1:
-		addi $a0, $a0, -1   # 60
-		jal Sum             #  64
-		lw $a0, 0($sp)      # 68
-		lw $ra, -4($sp)
-		addi $sp, $sp, -8
-		add $v0, $a0, $v0
-		jr $ra
+#		##########################
+#		# Fisrt Evaluation Program
+#		###########################
+#		addi $a0, $zero, 3
+#		jal Sum
+#	Loop:
+#		beq $zero, $zero, Loop     # 3c  
+#	Sum:
+#		addi $sp, $sp, 8    # 40
+#		sw $ra, -4($sp)     # 
+#		sw $a0, 0($sp)
+#		slti $t0, $a0, 1
+#		beq $t0, $zero, L1   # 50
+#		xor $v0, $zero, $zero
+#		addi $sp, $sp, -8
+#		jr $ra       #  23
+#	L1:
+#		addi $a0, $a0, -1   # 60
+#		jal Sum             #  64
+#		lw $a0, 0($sp)      # 68
+#		lw $ra, -4($sp)
+#		addi $sp, $sp, -8
+#		add $v0, $a0, $v0
+#		jr $ra
 
 
 

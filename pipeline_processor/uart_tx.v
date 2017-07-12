@@ -22,8 +22,8 @@ module uart_tx
    output      o_Tx_Done
    );
   
-  parameter CLKS_PER_BIT    = 1302;
-  //parameter CLKS_PER_BIT    = 10416;
+  //parameter CLKS_PER_BIT    = 1302;
+  parameter CLKS_PER_BIT    = 10416;
   
   parameter s_IDLE         = 3'b000;
   parameter s_TX_START_BIT = 3'b001;
