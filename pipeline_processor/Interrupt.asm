@@ -1,3 +1,5 @@
+#  CPU design experiment  7/11/2017   
+
 j Main
 j Interrupt
 j Exception
@@ -131,12 +133,8 @@ Main:
 #############################################################################
 #                        Interrupt Handle Procedure                         #
 #                                                                           #
-#   Part 1:    Timer Interrption, in which we load the digi data 		    #
-#           and display it.  (finished)									        #
-#	Part 2:    Uart Interruption, in which we wait for the data.		    #
-#                             
-#																			#
-#   Both parts are integrated in the program below.							#											#
+#    Timer Interrption, in which we load the digi data 		    			#
+#           and display it.  (finished)									    #
 #############################################################################
 
 
