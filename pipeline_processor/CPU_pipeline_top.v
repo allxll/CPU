@@ -9,7 +9,7 @@ module CPU_pipeline_top (
 );
 
 wire reset = switch;
-reg [1:0] counter;
+reg [2:0] counter;
 reg div_clk;
 initial begin
 	div_clk = 0;
