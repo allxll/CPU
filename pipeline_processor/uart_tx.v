@@ -23,9 +23,9 @@ module uart_tx
    );
   
   //parameter CLKS_PER_BIT    = 1302;
-  //parameter CLKS_PER_BIT    = 10416;  // 100M
+  parameter CLKS_PER_BIT    = 10416;  // 100M
 
-  parameter CLKS_PER_BIT    = 1041;  // 10M
+  //parameter CLKS_PER_BIT    = 1041;  // 10M
 
 
 

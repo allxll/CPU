@@ -21,9 +21,9 @@ module uart_rx
    );
     
   //parameter CLKS_PER_BIT    = 1302;
-  //parameter CLKS_PER_BIT    = 10416;  // 100M
+  parameter CLKS_PER_BIT    = 10416;  // 100M
 
-  parameter CLKS_PER_BIT    = 1041;  // 10M
+  //parameter CLKS_PER_BIT    = 1041;  // 10M
 
   parameter s_IDLE         = 3'b000;
   parameter s_RX_START_BIT = 3'b001;
