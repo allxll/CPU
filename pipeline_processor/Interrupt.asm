@@ -94,7 +94,7 @@ Main:
 		sw $s0, 16($t0)    # send uart
 		sw $s0, 4($t0)     # set led
 		addi $t1, $zero, 3
-#		sw $t1, 0($t0)    #  start timer, enable interruption
+		sw $t1, 0($t0)    #  start timer, enable interruption
 	Loop:
 		blez $zero, Loop
 

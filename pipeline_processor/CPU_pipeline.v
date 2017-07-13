@@ -11,11 +11,11 @@ module CPU_pipeline (
 );
 
 	// Uart signals
-	wire TX_EN;
-	wire [7:0] RX_DATA;
-	wire [7:0] TX_DATA;
-	wire TX_STATUS;
-	wire RX_STATUS;
+	wire       TX_EN    ;
+	wire [7:0] RX_DATA  ;
+	wire [7:0] TX_DATA  ;
+	wire       TX_STATUS;
+	wire       RX_STATUS;
 
 
 //parameter c_CLKS_PER_BIT    = 10416;
@@ -50,7 +50,7 @@ module CPU_pipeline (
 	wire [1:0] MemToReg_ID;
 	wire       EXTOp_ID   ;
 	wire       LUOp_ID    ;
-	wire  [1:0]     isJ_ID ;
+	wire [1:0] isJ_ID     ;
 	wire       isBranch_ID;
 
 	// Signal in IF/ID register
@@ -70,6 +70,11 @@ module CPU_pipeline (
 	wire [31:0] LUOut_ID   ;
 	wire [31:0] ConBA_ID   ;
 	wire [31:0] JTplusPC_ID;
+	//  IRQ signals
+	wire [31:0] PC_plus4_IF_ID_IRQ;
+	wire        RegWr_ID_IRQ      ;
+	wire [ 1:0] RegDst_ID_IRQ     ;
+	wire [ 1:0] MemToReg_ID_IRQ   ;
 
 
 	//  Data read from register pile in ID stage
@@ -98,6 +103,8 @@ module CPU_pipeline (
 	wire [ 1:0] RegDst_ID_EX    ;
 	wire        isBranch_ID_EX  ;
 	wire [31:0] ConBA_ID_EX     ;
+	wire [ 1:0] isJ_ID_EX       ;
+
 
 	//  Data calculated in EX stage, including forwarding logic and ALU calculation
 	wire [ 1:0] ForwardA      ;
@@ -134,14 +141,15 @@ module CPU_pipeline (
 
 
 	// Data stored in the MEM/WB register
-	wire [ 4:0] RegisterRd_MEM_WB  ;
-	wire [ 4:0] RegisterRt_MEM_WB  ;
-	wire [31:0] PC_plus4_MEM_WB    ;
-	wire [31:0] ALUOut_MEM_WB      ;
-	wire [ 1:0] MemtoReg_MEM_WB    ;
-	wire [ 1:0] RegDst_MEM_WB      ;
-	wire        RegWr_MEM_WB       ;
-	wire [31:0] Data_Out_MEM_WB	   ;
+	wire [ 4:0] RegisterRd_MEM_WB;
+	wire [ 4:0] RegisterRt_MEM_WB;
+	wire [31:0] PC_plus4_MEM_WB  ;
+	wire [31:0] ALUOut_MEM_WB    ;
+	wire [ 1:0] MemtoReg_MEM_WB  ;
+	wire [ 1:0] RegDst_MEM_WB    ;
+	wire        RegWr_MEM_WB     ;
+	wire [31:0] Data_Out_MEM_WB  ;
+	wire        isBranch_EX_MEM  ;
 
 	// Data calculated in the WB stage
 	wire [ 4:0] Address_dest_WB;
@@ -152,12 +160,15 @@ module CPU_pipeline (
 
 	// calculations listed below (mainly muxes, except for 2 adders)
 
-	assign PC_in_J     = (isJ_ID == 2'b01)?JTplusPC_ID:
-						 (isJ_ID == 2'b10)?DataBus_A_ID:
-						 PC_plus4_IF;
-	assign PC_in       = (isBranch_ID_EX && ALUOut_EX)?ConBA_ID_EX:PC_in_J;
-	assign IF_ID_Flush = ((isJ_ID != 2'b0 )|| (isBranch_ID_EX && ALUOut_EX))?1:0;
-	assign ID_EX_Flush = (ID_EX_Flush_Hazard || (isBranch_ID_EX && ALUOut_EX))?1:0;
+	assign PC_in_J = (isJ_ID == 2'b01)?JTplusPC_ID:
+		(isJ_ID == 2'b10)?DataBus_A_ID:
+		PC_plus4_IF;
+	assign PC_in = IRQ? 32'h80000004:
+		(isBranch_ID_EX && ALUOut_EX)?ConBA_ID_EX:PC_in_J;
+
+
+	assign IF_ID_Flush = (IRQ || (isJ_ID != 2'b0 )|| (isBranch_ID_EX && ALUOut_EX))?1:0;
+	assign ID_EX_Flush = (!IRQ && (ID_EX_Flush_Hazard || (isBranch_ID_EX && ALUOut_EX)))?1:0;
 
 	assign PC_plus4_IF = {PC_IF[31], PC_IF[30:0]+31'h00000004};
 
@@ -184,7 +195,12 @@ module CPU_pipeline (
 		(MemtoReg_MEM_WB == 2'b10)?PC_plus4_MEM_WB:0;
 
 
-
+	assign PC_plus4_IF_ID_IRQ = (IRQ && isBranch_EX_MEM)?PC_plus4_EX_MEM:
+		(IRQ && (isBranch_ID_EX || isJ_ID_EX == 2'b01 || isJ_ID_EX == 2'b10))?PC_plus4_ID_EX:
+		PC_plus4_IF_ID;
+	assign RegDst_ID_IRQ   = IRQ?2'b11:RegDst_ID;
+	assign RegWr_ID_IRQ    = IRQ?1'b1:RegWr_ID;
+	assign MemToReg_ID_IRQ = IRQ?2'b10:MemToReg_ID;
 
 
 ///////////////////////////////////////
@@ -257,47 +273,49 @@ module CPU_pipeline (
 
 
 	IDtoEX i_IDtoEX (
-		.clk           (clk             ),
-		.reset         (reset           ),
-		.ID_EX_Flush   (ID_EX_Flush     ),
-		.PC_plus4      (PC_plus4_IF_ID  ),
-		.PC_plus4_out  (PC_plus4_ID_EX  ),
-		.RegisterRs    (RegisterRs_IF_ID),
-		.RegisterRt    (RegisterRt_IF_ID),
-		.ALUFun        (ALUFun_ID       ),
-		.ALUSrc1       (ALUSrc1_ID      ),
-		.ALUSrc2       (ALUSrc2_ID      ),
-		.DataBus_A     (DataBus_A_ID    ),
-		.DataBus_B     (DataBus_B_ID    ),
-		.Sign          (Sign_ID         ),
-		.Immediate     (LUOut_ID        ),
-		.Shamt         (Shamt_IF_ID     ),
-		.RegisterRs_out(RegisterRs_ID_EX),
-		.RegisterRt_out(RegisterRt_ID_EX),
-		.ALUFun_out    (ALUFun_ID_EX    ),
-		.ALUSrc1_out   (ALUSrc1_ID_EX   ),
-		.ALUSrc2_out   (ALUSrc2_ID_EX   ),
-		.DataBus_A_out (DataBus_A_ID_EX ),
-		.DataBus_B_out (DataBus_B_ID_EX ),
-		.Sign_out      (Sign_ID_EX      ),
-		.Immediate_out (LUOut_ID_EX     ),
-		.Shamt_out     (Shamt_ID_EX     ),
-		.MemWr         (MemWr_ID        ),
-		.MemRd         (MemRd_ID        ),
-		.MemRd_out     (MemRd_ID_EX     ),
-		.MemWr_out     (MemWr_ID_EX     ),
-		.RegWr         (RegWr_ID        ),
-		.RegisterRd    (RegisterRd_IF_ID),
-		.RegDst        (RegDst_ID       ),
-		.MemToReg      (MemToReg_ID     ),
-		.RegWr_out     (RegWr_ID_EX     ),
-		.MemToReg_out  (MemToReg_ID_EX  ),
-		.RegisterRd_out(RegisterRd_ID_EX),
-		.RegDst_out    (RegDst_ID_EX    ),
-		.isBranch      (isBranch_ID     ),
-		.isBranch_out  (isBranch_ID_EX  ),
-		.ConBA         (ConBA_ID),
-		.ConBA_ID_EX   (ConBA_ID_EX)
+		.clk           (clk               ),
+		.reset         (reset             ),
+		.ID_EX_Flush   (ID_EX_Flush       ),
+		.PC_plus4      (PC_plus4_IF_ID_IRQ), //  IRQ
+		.PC_plus4_out  (PC_plus4_ID_EX    ),
+		.RegisterRs    (RegisterRs_IF_ID  ),
+		.RegisterRt    (RegisterRt_IF_ID  ),
+		.ALUFun        (ALUFun_ID         ),
+		.ALUSrc1       (ALUSrc1_ID        ),
+		.ALUSrc2       (ALUSrc2_ID        ),
+		.DataBus_A     (DataBus_A_ID      ),
+		.DataBus_B     (DataBus_B_ID      ),
+		.Sign          (Sign_ID           ),
+		.Immediate     (LUOut_ID          ),
+		.Shamt         (Shamt_IF_ID       ),
+		.RegisterRs_out(RegisterRs_ID_EX  ),
+		.RegisterRt_out(RegisterRt_ID_EX  ),
+		.ALUFun_out    (ALUFun_ID_EX      ),
+		.ALUSrc1_out   (ALUSrc1_ID_EX     ),
+		.ALUSrc2_out   (ALUSrc2_ID_EX     ),
+		.DataBus_A_out (DataBus_A_ID_EX   ),
+		.DataBus_B_out (DataBus_B_ID_EX   ),
+		.Sign_out      (Sign_ID_EX        ),
+		.Immediate_out (LUOut_ID_EX       ),
+		.Shamt_out     (Shamt_ID_EX       ),
+		.MemWr         (MemWr_ID          ),
+		.MemRd         (MemRd_ID          ),
+		.MemRd_out     (MemRd_ID_EX       ),
+		.MemWr_out     (MemWr_ID_EX       ),
+		.RegWr         (RegWr_ID_IRQ      ), //  IRQ
+		.RegisterRd    (RegisterRd_IF_ID  ),
+		.RegDst        (RegDst_ID_IRQ     ), //   IRQ
+		.MemToReg      (MemToReg_ID_IRQ   ), //   IRQ
+		.RegWr_out     (RegWr_ID_EX       ),
+		.MemToReg_out  (MemToReg_ID_EX    ),
+		.RegisterRd_out(RegisterRd_ID_EX  ),
+		.RegDst_out    (RegDst_ID_EX      ),
+		.isBranch      (isBranch_ID       ),
+		.isBranch_out  (isBranch_ID_EX    ),
+		.ConBA         (ConBA_ID          ),
+		.ConBA_ID_EX   (ConBA_ID_EX       ),
+		.isJ           (isJ_ID            ),
+		.isJ_out       (isJ_ID_EX         )
 	);
 
 
@@ -311,8 +329,8 @@ module CPU_pipeline (
 		.MemtoReg_MEM_WB  (MemtoReg_MEM_WB  ),
 		.MemWr_EX_MEM     (MemWr_EX_MEM     ),
 		.RegisterRt_EX_MEM(RegisterRt_EX_MEM),
-		.RegDst_MEM_WB    (RegDst_MEM_WB),
-		.RegDst_EX_MEM    (RegDst_EX_MEM),
+		.RegDst_MEM_WB    (RegDst_MEM_WB    ),
+		.RegDst_EX_MEM    (RegDst_EX_MEM    ),
 		.RegisterRt_MEM_WB(RegisterRt_MEM_WB),
 		.ForwardA         (ForwardA         ),
 		.ForwardB         (ForwardB         ),
@@ -339,7 +357,7 @@ module CPU_pipeline (
 		.RegisterRt_out(RegisterRt_EX_MEM),
 		.MemWr         (MemWr_ID_EX      ),
 		.MemRd         (MemRd_ID_EX      ),
-		.DataBus_B     (ALU_reg_in2_EX   ),   // this is the value after forwarding
+		.DataBus_B     (ALU_reg_in2_EX   ), // this is the value after forwarding
 		.ALUOut        (ALUOut_EX        ),
 		.MemWr_out     (MemWr_EX_MEM     ),
 		.MemRd_out     (MemRd_EX_MEM     ),
@@ -352,7 +370,9 @@ module CPU_pipeline (
 		.RegDst_out    (RegDst_EX_MEM    ),
 		.RegWr_out     (RegWr_EX_MEM     ),
 		.MemToReg_out  (MemToReg_EX_MEM  ),
-		.RegisterRd_out(RegisterRd_EX_MEM)
+		.RegisterRd_out(RegisterRd_EX_MEM),
+		.isBranch      (isBranch_ID_EX   ),
+		.isBranch_out  (isBranch_EX_MEM  )
 	);
 
 
@@ -390,25 +410,25 @@ module CPU_pipeline (
 
 
 	MEMtoWB i_MEMtoWB (
-		.clk             (clk                ),
-		.reset           (reset              ),
-		.PC_plus4        (PC_plus4_EX_MEM    ),
-		.Data_Mem_Out    (Data_Out_MEM   ),
-		.ALUOut          (ALUOut_EX_MEM      ),
-		.RegDst          (RegDst_EX_MEM      ),
-		.RegWr           (RegWr_EX_MEM       ),
-		.MemToReg        (MemToReg_EX_MEM    ),
-		.RegisterRd      (RegisterRd_EX_MEM  ),
-		.RegisterRt      (RegisterRt_EX_MEM  ),
-
-		.PC_plus4_out    (PC_plus4_MEM_WB    ),
-		.Data_Mem_Out_out(Data_Out_MEM_WB),
-		.ALUOut_out      (ALUOut_MEM_WB      ),
-		.RegDst_out      (RegDst_MEM_WB      ),
-		.RegWr_out       (RegWr_MEM_WB       ),
-		.RegisterRd_out  (RegisterRd_MEM_WB  ),
-		.RegisterRt_out  (RegisterRt_MEM_WB  ),
-		.MemToReg_out    (MemtoReg_MEM_WB)
+		.clk             (clk              ),
+		.reset           (reset            ),
+		.PC_plus4        (PC_plus4_EX_MEM  ),
+		.Data_Mem_Out    (Data_Out_MEM     ),
+		.ALUOut          (ALUOut_EX_MEM    ),
+		.RegDst          (RegDst_EX_MEM    ),
+		.RegWr           (RegWr_EX_MEM     ),
+		.MemToReg        (MemToReg_EX_MEM  ),
+		.RegisterRd      (RegisterRd_EX_MEM),
+		.RegisterRt      (RegisterRt_EX_MEM),
+		
+		.PC_plus4_out    (PC_plus4_MEM_WB  ),
+		.Data_Mem_Out_out(Data_Out_MEM_WB  ),
+		.ALUOut_out      (ALUOut_MEM_WB    ),
+		.RegDst_out      (RegDst_MEM_WB    ),
+		.RegWr_out       (RegWr_MEM_WB     ),
+		.RegisterRd_out  (RegisterRd_MEM_WB),
+		.RegisterRt_out  (RegisterRt_MEM_WB),
+		.MemToReg_out    (MemtoReg_MEM_WB  )
 	);
 
 	hazard i_hazard (

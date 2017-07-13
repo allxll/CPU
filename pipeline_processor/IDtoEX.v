@@ -23,6 +23,8 @@ module IDtoEX (
   input      [ 4:0] Shamt         ,
   input             isBranch      ,
   input      [31:0] ConBA         ,
+  input [1:0] isJ,
+  output reg [1:0] isJ_out,
   output reg        isBranch_out  ,
   output reg [31:0] ConBA_ID_EX   ,
   output reg [ 4:0] RegisterRs_out,
@@ -71,6 +73,7 @@ initial begin
   MemWr_out     <= 0;
   PC_plus4_out <= 0;
   ConBA_ID_EX <= 0;
+  isJ_out <= 0;
 end
 
 
@@ -107,6 +110,7 @@ end
       MemToReg_out   <= MemToReg;
       RegisterRd_out <= RegisterRd;
       ConBA_ID_EX <= ConBA;
+      isJ_out <= isJ;
     end
 //      EXTOp_out<=EXTOp;
     //     LUOp_out<=LUOp;

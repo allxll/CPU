@@ -5,6 +5,10 @@ module  EXtoMEM(
     input [31:0] PC_plus4,
     output reg [31:0]PC_plus4_out,
 
+    // IRQ control
+    input isBranch,
+    output reg isBranch_out,
+
     // forward module
     input [4:0] RegisterRt,
     output reg [4:0] RegisterRt_out,
@@ -43,6 +47,7 @@ initial begin
     RegWr_out <= 0;
     MemToReg_out <= 0;
     RegisterRd_out <= 0;
+    isBranch_out <= 0;
 end
 
 
@@ -56,6 +61,9 @@ always@(posedge clk) begin
         PC_plus4_out<=PC_plus4;
         RegisterRt_out<=RegisterRt;
         
+        isBranch_out <= isBranch;
+
+
         // MEM
         ALUOut_out<=ALUOut;
         MemWr_out<=MemWr;
