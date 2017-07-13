@@ -27,11 +27,11 @@ Main:
 
 
 	lui $t2, 0xffff
-	ori $t2, $t2, 0xffe0
-	sw $t2, -8($t0)    # set TH to be 32? clock timer.
+	ori $t2, $t2, 0xf82f
+	sw $t2, -8($t0)    # set TH to be 2000 clock timer.
 
 	ori $t2, $t2, 0xffff
-	sw $t2, -4($t0)   # set TL to be 0xffffffff
+	sw $t2, -4($t0)  # 10  # set TL to be 0xffffffff
 
 	addi $t1, $zero, 0   
 	sw $t1, 0($t0)     # set TCON = 0, stop timer, disable interrupt
@@ -62,7 +62,7 @@ Main:
 	Write_1:
 		lw $a0, 20($t0)   # load the first number to $a0
 		addi $v0, $v0, 1
-		j Read
+		j Read   # 20
 	Write:
 		sw $zero, 24($t0)    # UARTCON = 5'b0 manually , mainly to reset UARTCON[3]
 		beq $v0, $zero, Write_1
@@ -78,20 +78,20 @@ Main:
 		add $s0,$zero,$s1	
 		add $s1,$zero,$t2	
 		slt $t3,$s1,$s0		
-		beq $t3,$zero,lp2	
+		beq $t3,$zero,lp2	# 30
 		add $t2,$zero,$s0	
 		add $s0,$zero,$s1	
 		add $s1,$zero,$t2	
 	lp2:
 		sub $s1,$s1,$s0	
-		slt $t3,$s0,$s1	   # 36s	
+		slt $t3,$s0,$s1	   # 	
 		beq $t3,$zero,eq	
 		j lp2			
 	eq:
 		beq $s1,$zero,end   
 		j lp1
 	end:
-		sw $s0, 16($t0)    # send uart
+		sw $s0, 16($t0)  #40  # send uart
 		sw $s0, 4($t0)     # set led
 		addi $t1, $zero, 3
 		sw $t1, 0($t0)    #  start timer, enable interruption
@@ -161,7 +161,7 @@ Main:
 # $t0 == 0x40000000
 
 Interrupt:
-	sw $t1, 4($sp)   # 44
+	sw $t1, 4($sp)   # 45
 	sw $t0, 8($sp)
 	add $t0, $zero, $zero
 	lui $t0, 0x4000

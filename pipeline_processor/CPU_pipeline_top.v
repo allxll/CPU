@@ -1,4 +1,4 @@
-module CPU_single_cycle_top (
+module CPU_pipeline_top (
 	input clk,    // Clock
 //	input [7:0] switch,
 	input switch,
@@ -17,7 +17,7 @@ initial begin
 end
 
 always @(posedge clk) begin 
-	if(counter == 3) begin
+	if(counter == 4) begin
 		counter <= 0;
 		div_clk <= ~div_clk;
 	end
@@ -26,7 +26,7 @@ always @(posedge clk) begin
 end
 
 
-CPU_single processor(
+CPU_pipeline processor(
 	.reset (reset),
 	.switch(),
 	.led   (led),

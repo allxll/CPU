@@ -75,7 +75,7 @@ module CPU_pipeline (
 	wire        RegWr_ID_IRQ      ;
 	wire [ 1:0] RegDst_ID_IRQ     ;
 	wire [ 1:0] MemToReg_ID_IRQ   ;
-
+	wire        isBranch_ID_IRQ   ;
 
 	//  Data read from register pile in ID stage
 	wire [31:0] DataBus_A_ID;
@@ -154,7 +154,7 @@ module CPU_pipeline (
 	// Data calculated in the WB stage
 	wire [ 4:0] Address_dest_WB;
 	wire [31:0] DataBus_C_WB   ;
-
+	wire 		RegWr_MEM_WB_IRQ;
 
 
 
@@ -193,7 +193,7 @@ module CPU_pipeline (
 	assign DataBus_C_WB = (MemtoReg_MEM_WB == 2'b00)?ALUOut_MEM_WB:
 		(MemtoReg_MEM_WB == 2'b01)?Data_Out_MEM_WB:
 		(MemtoReg_MEM_WB == 2'b10)?PC_plus4_MEM_WB:0;
-
+	assign RegWr_MEM_WB_IRQ = (RegDst_MEM_WB == 2'b11 && PC_plus4_MEM_WB[31])?0:RegWr_MEM_WB;
 
 	assign PC_plus4_IF_ID_IRQ = (IRQ && isBranch_EX_MEM)?PC_plus4_EX_MEM:
 		(IRQ && (isBranch_ID_EX || isJ_ID_EX == 2'b01 || isJ_ID_EX == 2'b10))?PC_plus4_ID_EX:
@@ -201,7 +201,7 @@ module CPU_pipeline (
 	assign RegDst_ID_IRQ   = IRQ?2'b11:RegDst_ID;
 	assign RegWr_ID_IRQ    = IRQ?1'b1:RegWr_ID;
 	assign MemToReg_ID_IRQ = IRQ?2'b10:MemToReg_ID;
-
+	assign isBranch_ID_IRQ = IRQ?0:isBranch_ID;
 
 ///////////////////////////////////////
 ///////   Module instances ////////////
@@ -262,7 +262,7 @@ module CPU_pipeline (
 	RegFile RF (
 		.reset(reset           ),
 		.clk  (clk             ),
-		.wr   (RegWr_MEM_WB    ),
+		.wr   (RegWr_MEM_WB_IRQ ),
 		.addr1(RegisterRs_IF_ID), // Rs
 		.addr2(RegisterRt_IF_ID), // Rt
 		.addr3(Address_dest_WB ),
@@ -310,7 +310,7 @@ module CPU_pipeline (
 		.MemToReg_out  (MemToReg_ID_EX    ),
 		.RegisterRd_out(RegisterRd_ID_EX  ),
 		.RegDst_out    (RegDst_ID_EX      ),
-		.isBranch      (isBranch_ID       ),
+		.isBranch      (isBranch_ID_IRQ   ), // IRQ
 		.isBranch_out  (isBranch_ID_EX    ),
 		.ConBA         (ConBA_ID          ),
 		.ConBA_ID_EX   (ConBA_ID_EX       ),
