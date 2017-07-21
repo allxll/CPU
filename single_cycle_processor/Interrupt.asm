@@ -3,6 +3,7 @@
 j Main
 j Interrupt
 j Exception
+
 ########### Normal Process ##################
 Main:
 #####################################
@@ -284,9 +285,6 @@ Decode:             # read $a3,  decode to $t2
 		addi $t2, $zero, 0x0038
 		jr $ra
 
-
-
-
 Exit:
 	addi $sp, $sp, -36
 	lw $ra, 12($sp)
@@ -298,14 +296,14 @@ Exit:
 	lw $s0, 36($sp)
 	addi $k0, $k0, -4
 	ori $t1, $t1, 0x0002
-	sw $t1, 8($t0) 
+	sw $t1, 8($t0) 			# start interruption
 	lw $t1, 4($sp)
 	lw $t0, 8($sp)
 	jr $k0
 
 
 ###################################################
-#			Overflow Exception 			          #
+#			Undefined Instruction Exception       #
 ###################################################
 
 Exception:

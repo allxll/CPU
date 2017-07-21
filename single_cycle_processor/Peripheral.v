@@ -108,38 +108,19 @@ always@(posedge clk) begin
 				TCON[2] <= 0; 
 			end
 		end
-
 		if (UART_status_counter == 0) begin
 			if (RX_STATUS) begin
 				UART_RXD <= RX_DATA;
 				UARTCON[3] <= 1'b1;
 			end
-				// if (TX_STATUS) begin
-				// 	UART_status_counter <= 1;
-				// end
-				// else begin
-				// 	UART_status_counter <= 2;
-				// end
 			UARTCON[2] <= 0;
 		end
 		else if (UART_status_counter == 1) begin
-			// if (UART_RXD[7]) begin
-			// 	TX_DATA <= ~UART_RXD;
-			// end
-			// else begin
-			// 	TX_DATA <= UART_RXD;
-			// end
 			UART_status_counter <= 0;
 			UARTCON[2] <= 1;
 		end
 		else begin
 			if (~TX_STATUS) begin
-				// if (UART_RXD[7]) begin
-				// 	TX_DATA <= UART_RXD;
-				// end
-				// else begin
-				// 	TX_DATA <= ~UART_RXD;
-				// end
 				UART_status_counter <= 0;
 				UARTCON[2] <= 1;
 			end

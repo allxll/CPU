@@ -22,6 +22,21 @@ assign S4 = N | Z;
 assign S5 = N;
 assign S6 = ~(N | Z);
 
+always @(*) begin : proc_compare
+	case (ALUFun)
+		3'b000: S = S2;
+		3'b001: S = S1;
+		3'b010: S = S3;
+		3'b011: S = 0;
+		3'b100: S = 0;
+		3'b101: S = S5;
+		3'b110: S = S4;
+		3'b111: S = S6;
+	endcase
+end
+
+endmodule
+
 
 // wire SA, SB;
 // always @(*) begin : proc_compare1
@@ -39,18 +54,3 @@ assign S6 = ~(N | Z);
 // end
 
 // assign S = ALUFun[2] ? SB : SA;
-
-always @(*) begin : proc_compare
-	case (ALUFun)
-		3'b000: S = S2;
-		3'b001: S = S1;
-		3'b010: S = S3;
-		3'b011: S = 0;
-		3'b100: S = 0;
-		3'b101: S = S5;
-		3'b110: S = S4;
-		3'b111: S = S6;
-	endcase
-end
-
-endmodule

@@ -9,21 +9,21 @@ module CPU_single_cycle_top (
 );
 
 wire reset = switch;
-reg [1:0] counter;
-reg div_clk;
-initial begin
-	div_clk = 0;
-	counter = 0;
-end
+// reg [1:0] counter;
+// reg div_clk;
+// initial begin
+// 	div_clk = 0;
+// 	counter = 0;
+// end
 
-always @(posedge clk) begin 
-	if(counter == 3) begin
-		counter <= 0;
-		div_clk <= ~div_clk;
-	end
-	else
-		counter <= counter + 1;
-end
+// always @(posedge clk) begin 
+// 	if(counter == 3) begin
+// 		counter <= 0;
+// 		div_clk <= ~div_clk;
+// 	end
+// 	else
+// 		counter <= counter + 1;
+// end
 
 
 CPU_single processor(
@@ -31,7 +31,7 @@ CPU_single processor(
 	.switch(),
 	.led   (led),
 	.digi  (digi),
-	.clk    (div_clk),
+	.clk    (clk),
 	.UART_RX(UART_RX),
 	.UART_TX(UART_TX)
 	);
